@@ -1,0 +1,66 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://java.sun.com/javase/6/webnotes/trouble/TSG-VM/html/jvm-tsg4.html
+hs_err_pid*
+
+# NetBeans specific files
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# IntelliJ IDEA Specific files
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse Specific files
+.classpath
+.project
+.settings/
+
+# Gradle
+.gradle
+/build/
+
+# Maven
+/target/
+
+# Spring Tool Suite (STS)
+.springBeans
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.settings
+bin
+
+### IntelliJ IDEA ###
+*.iml
+.idea
+*.ipr
+*.iws
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
