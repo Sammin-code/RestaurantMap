@@ -56,63 +56,85 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        logger.info("Configuring Security Filter Chain");
+
         http
-                .csrf(csrf -> csrf.disable())
-                .cors(withDefaults())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        // 允許所有 OPTIONS 請求
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // 公開端點
-                        .requestMatchers("/api/auth/**", "/api/users/login", "/api/users/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/restaurants/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/reviews/restaurant/**").permitAll()
-                        .requestMatchers("/uploads/**", "/api/uploads/**").permitAll()
-                        .requestMatchers("/api/debug/**").permitAll()
+                .csrf(csrf -> {
+                    logger.info("Disabling CSRF");
+                    csrf.disable();
+                })
+                .cors(cors -> {
+                    logger.info("Configuring CORS with custom configuration");
+                    cors.configurationSource(corsConfigurationSource());
+                })
+                .sessionManagement(session -> {
+                    logger.info("Setting session management to STATELESS");
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                })
+                .authorizeHttpRequests(auth -> {
+                    logger.info("Configuring authorization rules");
+                    auth
+                            // 允許所有 OPTIONS 請求
+                            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                            // 公開端點
+                            .requestMatchers("/api/auth/**", "/api/users/login", "/api/users/register").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/api/restaurants/**").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/api/reviews/restaurant/**").permitAll()
+                            .requestMatchers("/uploads/**", "/api/uploads/**").permitAll()
+                            .requestMatchers("/api/debug/**").permitAll()
 
-                        // 添加新的需要 REVIEWER 角色的端點
-                        .requestMatchers(HttpMethod.GET, "/api/users/{userId}").hasRole("REVIEWER")
-                        .requestMatchers(HttpMethod.GET, "/api/users/{userId}/favorites").hasRole("REVIEWER")
-                        .requestMatchers(HttpMethod.GET, "/api/users/{userId}/reviews").hasRole("REVIEWER")
-                        .requestMatchers(HttpMethod.GET, "/api/users/{userId}/restaurants").hasRole("REVIEWER")
+                            // 添加新的需要 REVIEWER 角色的端點
+                            .requestMatchers(HttpMethod.GET, "/api/users/{userId}").hasRole("REVIEWER")
+                            .requestMatchers(HttpMethod.GET, "/api/users/{userId}/favorites").hasRole("REVIEWER")
+                            .requestMatchers(HttpMethod.GET, "/api/users/{userId}/reviews").hasRole("REVIEWER")
+                            .requestMatchers(HttpMethod.GET, "/api/users/{userId}/restaurants").hasRole("REVIEWER")
 
-                        // 評論相關的端點
-                        .requestMatchers(HttpMethod.POST, "/api/reviews/restaurant/{restaurantId}").hasRole("REVIEWER")
-                        .requestMatchers(HttpMethod.PUT, "/api/reviews/{reviewId}").hasRole("REVIEWER")
-                        .requestMatchers(HttpMethod.POST, "/api/reviews/{reviewId}/like").hasRole("REVIEWER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/reviews/{reviewId}/like").hasRole("REVIEWER")
+                            // 評論相關的端點
+                            .requestMatchers(HttpMethod.POST, "/api/reviews/restaurant/{restaurantId}")
+                            .hasRole("REVIEWER")
+                            .requestMatchers(HttpMethod.PUT, "/api/reviews/{reviewId}").hasRole("REVIEWER")
+                            .requestMatchers(HttpMethod.POST, "/api/reviews/{reviewId}/like").hasRole("REVIEWER")
+                            .requestMatchers(HttpMethod.DELETE, "/api/reviews/{reviewId}/like").hasRole("REVIEWER")
 
-                        // 需要 REVIEWER 或 ADMIN 的端點
-                        .requestMatchers(HttpMethod.DELETE, "/api/reviews/{reviewId}").hasAnyRole("REVIEWER", "ADMIN")
-                        // 需要認證的端點
-                        .requestMatchers(HttpMethod.POST, "/api/restaurants").hasRole("REVIEWER")
-                        .requestMatchers(HttpMethod.PUT, "/api/restaurants/{id}").hasRole("REVIEWER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/restaurants/{id}").hasAnyRole("REVIEWER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/restaurants/*/favorite").hasAnyRole("REVIEWER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/restaurants/*/favorite").hasAnyRole("REVIEWER")
-                        .requestMatchers(HttpMethod.GET, "/api/restaurants/favorites").hasAnyRole("REVIEWER")
+                            // 需要 REVIEWER 或 ADMIN 的端點
+                            .requestMatchers(HttpMethod.DELETE, "/api/reviews/{reviewId}")
+                            .hasAnyRole("REVIEWER", "ADMIN")
+                            // 需要認證的端點
+                            .requestMatchers(HttpMethod.POST, "/api/restaurants").hasRole("REVIEWER")
+                            .requestMatchers(HttpMethod.PUT, "/api/restaurants/{id}").hasRole("REVIEWER")
+                            .requestMatchers(HttpMethod.DELETE, "/api/restaurants/{id}").hasAnyRole("REVIEWER", "ADMIN")
+                            .requestMatchers(HttpMethod.POST, "/api/restaurants/*/favorite").hasAnyRole("REVIEWER")
+                            .requestMatchers(HttpMethod.DELETE, "/api/restaurants/*/favorite").hasAnyRole("REVIEWER")
+                            .requestMatchers(HttpMethod.GET, "/api/restaurants/favorites").hasAnyRole("REVIEWER")
 
-                        // 其他需要認證的請求
-                        .anyRequest().authenticated())
+                            // 其他需要認證的請求
+                            .anyRequest().authenticated();
+                })
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // 添加異常處理
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
-                            logger.error("Authentication error: {}", authException.getMessage());
+                            logger.error("Authentication error: {} - Request URI: {}, Method: {}",
+                                    authException.getMessage(),
+                                    request.getRequestURI(),
+                                    request.getMethod());
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json");
                             response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"請先登入\"}");
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            logger.error("Access denied: {}", accessDeniedException.getMessage());
+                            logger.error("Access denied: {} - Request URI: {}, Method: {}",
+                                    accessDeniedException.getMessage(),
+                                    request.getRequestURI(),
+                                    request.getMethod());
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             response.setContentType("application/json");
                             response.getWriter().write("{\"error\": \"Forbidden\", \"message\": \"權限不足\"}");
                         }));
 
+        logger.info("Security Filter Chain configured successfully");
         return http.build();
     }
 
@@ -128,6 +150,12 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("*"));
         configuration.setMaxAge(3600L);
+
+        logger.info("CORS Configuration: Allowed Origins: {}, Allowed Methods: {}, Allowed Headers: {}, Max Age: {}",
+                configuration.getAllowedOrigins(),
+                configuration.getAllowedMethods(),
+                configuration.getAllowedHeaders(),
+                configuration.getMaxAge());
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
