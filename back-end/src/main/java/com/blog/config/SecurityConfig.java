@@ -97,7 +97,6 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new CorsFilter(corsConfigurationSource()), ChannelProcessingFilter.class)
 
                 // 添加異常處理
                 .exceptionHandling(exception -> exception
