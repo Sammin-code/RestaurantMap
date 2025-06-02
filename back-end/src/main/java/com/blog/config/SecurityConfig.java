@@ -66,7 +66,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // 公開端點
                         .requestMatchers("/api/auth/**", "/api/users/login", "/api/users/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/restaurants/**").permitAll() // 允許所有餐廳相關的 GET 請求
+                        .requestMatchers(HttpMethod.GET, "/api/restaurants/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews/restaurant/**").permitAll()
                         .requestMatchers("/uploads/**", "/api/uploads/**").permitAll()
                         .requestMatchers("/api/debug/**").permitAll()
@@ -128,7 +128,6 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

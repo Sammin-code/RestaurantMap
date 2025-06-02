@@ -1,5 +1,5 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/restaurant-map', '-f', 'back-end/Dockerfile', '.']
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/restaurant-map', 'back-end']
 images:
 - 'gcr.io/$PROJECT_ID/restaurant-map' 

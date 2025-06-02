@@ -5,8 +5,7 @@ import router from '@/router';
 
 const api = axios.create({
   baseURL: 'https://restaurantmap-255668913932.asia-east1.run.app/api',
-  timeout: 5000,
-  withCredentials: true
+  timeout: 5000
 });
 
 // 請求攔截器
