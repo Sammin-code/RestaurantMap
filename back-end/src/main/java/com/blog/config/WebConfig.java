@@ -14,7 +14,6 @@ public class WebConfig implements WebMvcConfigurer {
             "http://localhost:5173",
             "https://restaurantmap-255668913932.asia-east1.run.app")
         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-        .allowedHeaders("*")
-        .allowCredentials(true);
+        .allowedHeaders("*");
   }
 }
