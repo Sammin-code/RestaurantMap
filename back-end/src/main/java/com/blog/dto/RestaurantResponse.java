@@ -3,6 +3,8 @@ package com.blog.dto;
 import java.util.ArrayList;
 import java.util.List;
 import com.blog.model.Review;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * Class Name: RestaurantResponse
@@ -12,6 +14,8 @@ import com.blog.model.Review;
  * Create: 2025/4/12
  * Version: 1.0
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RestaurantResponse {
     private Long id;
     private String name;
