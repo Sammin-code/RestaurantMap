@@ -12,6 +12,6 @@ RUN mvn clean package -DskipTests
 EXPOSE 8080
 
 ENV PORT=8080
-ENV JAVA_OPTS="-Xmx768m -Xms512m -Dserver.tomcat.startup-timeout=300000 -Dspring.profiles.active=prod"
+ENV JAVA_OPTS="-Xmx768m -Xms512m -Dserver.tomcat.startup-timeout=300000 -Dspring.profiles.active=prod -Dserver.port=8080"
 
 CMD java $JAVA_OPTS -jar target/demo-0.0.1-SNAPSHOT.jar 
