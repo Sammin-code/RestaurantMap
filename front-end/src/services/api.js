@@ -5,8 +5,8 @@ import router from '@/router';
 
 const api = axios.create({
   baseURL: 'https://restaurantmap-255668913932.asia-east1.run.app/api',
-  timeout: 5000,
-  withCredentials: true
+  timeout: 15000,
+  withCredentials: false
 });
 
 // 請求攔截器
@@ -77,7 +77,8 @@ api.interceptors.response.use(
         method: error.config.method,
         status,
         data,
-        headers: error.config.headers
+        headers: error.config.headers,
+        requestData: error.config.data // 添加請求數據
       });
 
       // 如果是評論列表請求，直接返回空數據
@@ -107,6 +108,17 @@ api.interceptors.response.use(
       }
       
       switch (status) {
+        case 400:
+          // 顯示具體的錯誤訊息
+          if (data && data.message) {
+            ElMessage.error(data.message);
+          } else if (data && data.error) {
+            ElMessage.error(data.error);
+          } else {
+            ElMessage.error('請求格式錯誤，請檢查輸入');
+          }
+          return Promise.reject(error);
+          
         case 401:
           const userStore = useUserStore();
           // 只有在非登入頁面且需要認證的請求時才清除用戶狀態
@@ -212,7 +224,21 @@ const userApi = {
 // 餐廳相關 API
 const restaurantApi = {
   // 獲取餐廳列表
-  getRestaurants: (params) => api.get('/restaurants', { params }),
+  getRestaurants: (params) => {
+    return api.get('/restaurants', { params })
+      .catch(error => {
+        console.error('Error fetching restaurants:', error);
+        // 返回空數據
+        return Promise.resolve({
+          data: {
+            content: [],
+            totalElements: 0,
+            currentPage: 0,
+            size: 10
+          }
+        });
+      });
+  },
   
   // 獲取熱門餐廳
   getPopular: () => {
