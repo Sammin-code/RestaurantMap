@@ -484,12 +484,17 @@ const handleAddRestaurant = async () => {
     // 將餐廳數據作為字符串添加到 FormData
     formData.append('restaurant', new Blob([JSON.stringify(restaurantData)], {
       type: 'application/json'
-    }));
+    }), 'restaurant.json');
     
     // 添加圖片
-    if (addRestaurantForm.coverImage && addRestaurantForm.coverImage.raw) {
-      console.log('Adding image to FormData:', addRestaurantForm.coverImage.raw);
-      formData.append('coverImage', addRestaurantForm.coverImage.raw);
+    if (addRestaurantForm.coverImage && addRestaurantForm.coverImage.file) {
+      console.log('Adding image to FormData:', addRestaurantForm.coverImage.file);
+      formData.append('coverImage', addRestaurantForm.coverImage.file, addRestaurantForm.coverImage.file.name);
+    }
+    
+    // 印出 formData 內容
+    for (let pair of formData.entries()) {
+      console.log('FormData:', pair[0], pair[1]);
     }
     
     let response;
@@ -633,72 +638,90 @@ const handleDelete = async (restaurantId) => {
 };
 
 // 修改 handleImageChange 函數，添加檔案驗證
-const handleImageChange = (file) => {
-  console.log('Image file:', file);
-  
-  // 檢查檔案大小（限制為 2MB）
-  const isLt2M = file.raw.size / 1024 / 1024 < 2;
-  if (!isLt2M) {
-    ElMessage.error('圖片大小不能超過 2MB!');
-    return;
-  }
-  
-  // 檢查檔案類型
-  const isImage = file.raw.type.startsWith('image/');
-  if (!isImage) {
-    ElMessage.error('只能上傳圖片檔案!');
-    return;
-  }
-  
-  // 壓縮圖片預覽
-  const compressImage = (file) => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (e) => {
-        const img = new Image();
-        img.src = e.target.result;
-        img.onload = () => {
-          // 創建canvas來調整圖片大小
-          const canvas = document.createElement('canvas');
-          // 設置最大寬度和高度
-          const MAX_WIDTH = 800;
-          const MAX_HEIGHT = 600;
-          let width = img.width;
-          let height = img.height;
-          
-          // 調整大小保持比例
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          // 設置較低的質量以減小文件大小
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          resolve(dataUrl);
-        };
-      };
-    });
-  };
-  
-  // 使用壓縮並設置預覽
-  compressImage(file.raw).then(dataUrl => {
+const handleImageChange = async (file) => {
+  try {
+    // 檢查檔案類型
+    if (!file.raw.type.startsWith('image/')) {
+      ElMessage.error('請上傳圖片檔案');
+      return;
+    }
+
+    // 檢查檔案大小（5MB）
+    if (file.raw.size > 5 * 1024 * 1024) {
+      ElMessage.error('圖片大小不能超過 5MB');
+      return;
+    }
+
+    // 壓縮圖片
+    const compressedFile = await compressImage(file.raw);
+    
+    // 更新表單
     addRestaurantForm.coverImage = {
-      raw: file.raw,  // 保留原始文件用於上傳
-      url: dataUrl    // 使用壓縮後的DataURL作為預覽
+      file: compressedFile,
+      url: URL.createObjectURL(compressedFile)
     };
+  } catch (error) {
+    console.error('圖片處理錯誤:', error);
+    ElMessage.error('圖片處理失敗，請重試');
+  }
+};
+
+// 圖片壓縮函數
+const compressImage = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // 如果圖片太大，等比例縮小
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 600;
+        
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // 轉換為 Blob
+        canvas.toBlob((blob) => {
+          // 創建新的 File 物件
+          const compressedFile = new File([blob], file.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now()
+          });
+          
+          console.log('圖片壓縮結果:', {
+            原始大小: (file.size / 1024 / 1024).toFixed(2) + 'MB',
+            壓縮後大小: (compressedFile.size / 1024 / 1024).toFixed(2) + 'MB',
+            原始尺寸: `${img.width}x${img.height}`,
+            壓縮後尺寸: `${width}x${height}`
+          });
+          
+          resolve(compressedFile);
+        }, 'image/jpeg', 0.8); // 使用 JPEG 格式，品質 0.8
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
   });
 };
 

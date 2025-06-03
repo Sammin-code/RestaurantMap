@@ -66,6 +66,11 @@ const formRef = ref(null)
 const handleLogin = async () => {
   try {
     loading.value = true;
+    console.log('Attempting login with:', {
+      username: loginForm.value.username,
+      baseURL: 'https://restaurantmap-255668913932.asia-east1.run.app/api'
+    });
+    
     await userStore.login(loginForm.value.username, loginForm.value.password);
     
     // 等待 store 初始化完成
@@ -81,7 +86,14 @@ const handleLogin = async () => {
     ElMessage.success('登入成功');
     router.push('/');
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error:', {
+      error,
+      response: error.response,
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    
     if (error.response?.status === 401) {
       ElMessage.error('用戶名或密碼錯誤');
     } else if (error.message === '登入狀態未正確初始化') {
