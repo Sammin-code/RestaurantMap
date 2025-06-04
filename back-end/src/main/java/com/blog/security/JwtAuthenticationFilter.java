@@ -45,21 +45,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/restaurants/popular",
             "/api/restaurants/latest",
             "/api/reviews/restaurant",
-            "/api/restaurants",  // 添加公開的餐廳列表
-            "/api/restaurants/{id}",  // 添加公開的單個餐廳
-            "/api/reviews/restaurant/{restaurantId}"  // 添加公開的餐廳評論
+            "/api/restaurants", // 添加公開的餐廳列表
+            "/api/restaurants/{id}", // 添加公開的單個餐廳
+            "/api/reviews/restaurant/{restaurantId}", // 添加公開的餐廳評論
+            "/api/images/" // 添加公開的圖片 API
     );
 
     // 定義需要認證的端點
     private static final List<String> PROTECTED_PATHS = Arrays.asList(
             "/api/restaurants/favorites",
             "/api/restaurants/\\d+/favorite",
-            "/api/users/\\d+",  // 添加用戶資料
-            "/api/users/\\d+/favorites",  // 添加用戶收藏
-            "/api/users/\\d+/reviews",  // 添加用戶評論
-            "/api/users/\\d+/restaurants",  // 添加用戶創建的餐廳
-            "/api/reviews/restaurant/\\d+",  // 添加評論相關
-            "/api/reviews/\\d+/like"  // 添加按讚相關
+            "/api/users/\\d+", // 添加用戶資料
+            "/api/users/\\d+/favorites", // 添加用戶收藏
+            "/api/users/\\d+/reviews", // 添加用戶評論
+            "/api/users/\\d+/restaurants", // 添加用戶創建的餐廳
+            "/api/reviews/restaurant/\\d+", // 添加評論相關
+            "/api/reviews/\\d+/like" // 添加按讚相關
     );
 
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, UserDetailsService userDetailsService) {
@@ -94,16 +95,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 檢查是否是公開的 GET 請求
-        if (method.equals(HttpMethod.GET.name())) {  // 首先判斷是否為 GET 請求
+        if (method.equals(HttpMethod.GET.name())) { // 首先判斷是否為 GET 請求
             // 檢查是否是公開的餐廳列表或評論
-            if (path.equals("/api/restaurants") ||    // 餐廳列表
-                    (path.startsWith("/api/restaurants/") &&   // 餐廳相關路徑
-                            !path.equals("/api/restaurants/favorites") &&  // 排除收藏列表
-                            !path.matches("/api/restaurants/\\d+")) ||    // 排除單個餐廳詳情
-                    path.startsWith("/api/reviews/restaurant/") ||        // 餐廳評論
-                    PUBLIC_PATHS.stream().anyMatch(path::startsWith)) {   // 其他公開路徑
+            if (path.equals("/api/restaurants") || // 餐廳列表
+                    (path.startsWith("/api/restaurants/") && // 餐廳相關路徑
+                            !path.equals("/api/restaurants/favorites") && // 排除收藏列表
+                            !path.matches("/api/restaurants/\\d+"))
+                    || // 排除單個餐廳詳情
+                    path.startsWith("/api/reviews/restaurant/") || // 餐廳評論
+                    PUBLIC_PATHS.stream().anyMatch(path::startsWith)) { // 其他公開路徑
                 logger.debug("Public GET request, skipping authentication: {}", path);
-                return true;  // 如果是公開路徑，跳過認證
+                return true; // 如果是公開路徑，跳過認證
             }
         }
         return false;
@@ -114,12 +116,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String path = request.getRequestURI();
         String method = request.getMethod();
-        logger.info("Processing request: {} {} with headers: {}", method, path, Collections.list(request.getHeaderNames())
-                .stream()
-                .collect(Collectors.toMap(
-                        headerName -> headerName,
-                        request::getHeader
-                )));
+        logger.info("Processing request: {} {} with headers: {}", method, path,
+                Collections.list(request.getHeaderNames())
+                        .stream()
+                        .collect(Collectors.toMap(
+                                headerName -> headerName,
+                                request::getHeader)));
 
         try {
             String jwt = getJwtFromRequest(request);
@@ -180,14 +182,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return !PUBLIC_PATHS.stream().anyMatch(path::startsWith);
     }
 
-    private void handleAuthenticationError(HttpServletResponse response, String error, String message) throws IOException {
+    private void handleAuthenticationError(HttpServletResponse response, String error, String message)
+            throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
         response.getWriter().write(String.format(
                 "{\"error\": \"%s\", \"message\": \"%s\"}",
                 error,
-                message
-        ));
+                message));
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {
