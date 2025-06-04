@@ -17,6 +17,7 @@ import org.springframework.context.event.EventListener;
 @SpringBootApplication
 public class Application {
     public static void main(String[] args) {
+        System.out.println("=== APP STARTED AT " + System.currentTimeMillis() + " ===");
         SpringApplication.run(Application.class, args);
     }
 
