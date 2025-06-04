@@ -82,6 +82,7 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.GET, "/api/reviews/restaurant/**").permitAll()
                             .requestMatchers("/uploads/**", "/api/uploads/**").permitAll()
                             .requestMatchers("/api/debug/**").permitAll()
+                            .requestMatchers("/api/images/**").permitAll()
 
                             // 添加新的需要 REVIEWER 角色的端點
                             .requestMatchers(HttpMethod.GET, "/api/users/{userId}").hasRole("REVIEWER")
