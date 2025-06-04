@@ -13,6 +13,9 @@
           </div>
         </template>
       </el-image>
+      <div style="color: red; font-size: 12px; word-break: break-all;">
+        圖片網址: {{ getRestaurantImageUrl(restaurant) }}
+      </div>
       <div class="restaurant-info">
         <h1>{{ restaurant.name }}</h1>
         

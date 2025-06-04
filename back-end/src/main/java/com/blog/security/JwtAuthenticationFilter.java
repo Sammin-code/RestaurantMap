@@ -71,12 +71,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
+        String servletPath = request.getServletPath();
+        String pathInfo = request.getPathInfo();
         String method = request.getMethod();
-        logger.info("Checking authentication for: {} {}", method, path);
+        logger.info("[shouldNotFilter] getRequestURI: {} | getServletPath: {} | getPathInfo: {} | method: {}", path,
+                servletPath, pathInfo, method);
 
-        // 直接放行圖片 API
-        if (path.startsWith("/api/images/")) {
-            logger.info("Image API, skipping authentication: {}", path);
+        // 直接放行圖片 API（同時判斷 getRequestURI 與 getServletPath）
+        if (path.startsWith("/api/images/") || (servletPath != null && servletPath.startsWith("/api/images/"))) {
+            logger.info("[shouldNotFilter] Image API, skipping authentication: {} | servletPath: {}", path,
+                    servletPath);
             return true;
         }
 
@@ -121,10 +125,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String path = request.getRequestURI();
-        System.out.println("=== FILTER PATH === " + path);
-        // 圖片 API 直接放行，不做任何認證
-        if (path.startsWith("/api/images/")) {
-            System.out.println("=== IMAGE API PASS === " + path);
+        String servletPath = request.getServletPath();
+        String pathInfo = request.getPathInfo();
+        System.out.println("=== FILTER PATH === " + path + ", servletPath: " + servletPath + ", pathInfo: " + pathInfo);
+        logger.info("[doFilterInternal] getRequestURI: {} | getServletPath: {} | getPathInfo: {}", path, servletPath,
+                pathInfo);
+        // 圖片 API 直接放行，不做任何認證（同時判斷 getRequestURI 與 getServletPath）
+        if (path.startsWith("/api/images/") || (servletPath != null && servletPath.startsWith("/api/images/"))) {
+            System.out.println("=== IMAGE API PASS === " + path + ", servletPath: " + servletPath);
+            logger.info("[doFilterInternal] Image API PASS: {} | servletPath: {}", path, servletPath);
             filterChain.doFilter(request, response);
             return;
         }

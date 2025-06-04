@@ -47,31 +47,32 @@ public class RestaurantController {
   @PostMapping
   @PreAuthorize("hasAnyRole('REVIEWER')")
   public ResponseEntity<RestaurantResponse> createRestaurant(
-          @RequestPart("restaurant") RestaurantResponse dto,
-          @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
-          Authentication authentication) {
+      @RequestPart("restaurant") RestaurantResponse dto,
+      @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
+      Authentication authentication) {
     UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     String currentUserName = userDetails.getUsername();
-    Long currentUserId = ((User) userDetails).getId();  // 獲取用戶ID
+    Long currentUserId = ((User) userDetails).getId(); // 獲取用戶ID
 
     Restaurant created = restaurantService.createRestaurant(dto, currentUserName, coverImage);
-    RestaurantResponse response = restaurantService.toDto(created, currentUserId);  // 加入 currentUserId
+    RestaurantResponse response = restaurantService.toDto(created, currentUserId); // 加入 currentUserId
 
     return ResponseEntity.ok(response);
   }
-  //獲取所有餐廳+篩選搜尋
+
+  // 獲取所有餐廳+篩選搜尋
   @GetMapping
   public ResponseEntity<?> getAllRestaurants(
-          @RequestParam(defaultValue = "0") int page,
-          @RequestParam(defaultValue = "10") int size,
-          @RequestParam(required = false) String sort,
-          @RequestParam(required = false) String keyword,
-          @RequestParam(required = false) String category,
-          @RequestParam(required = false) Double minRating) {
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(required = false) String sort,
+      @RequestParam(required = false) String keyword,
+      @RequestParam(required = false) String category,
+      @RequestParam(required = false) Double minRating) {
     try {
       Long currentUserId = getCurrentUserId();
       Page<Restaurant> restaurants = restaurantService.getAllRestaurants(
-              page, size, sort, keyword, category, minRating);
+          page, size, sort, keyword, category, minRating);
 
       // 初始化評論並計算評分
       restaurants.getContent().forEach(restaurant -> {
@@ -84,9 +85,9 @@ public class RestaurantController {
         // 計算平均評分
         if (!restaurant.getReviews().isEmpty()) {
           double averageRating = restaurant.getReviews().stream()
-                  .mapToInt(review -> review.getRating())
-                  .average()
-                  .orElse(0.0);
+              .mapToInt(review -> review.getRating())
+              .average()
+              .orElse(0.0);
           restaurant.setAverageRating(averageRating);
         } else {
           restaurant.setAverageRating(0.0);
@@ -94,8 +95,8 @@ public class RestaurantController {
       });
 
       // 轉換成 DTO
-      Page<RestaurantResponse> responsePage = restaurants.map(restaurant ->
-              restaurantService.toDto(restaurant, currentUserId));
+      Page<RestaurantResponse> responsePage = restaurants
+          .map(restaurant -> restaurantService.toDto(restaurant, currentUserId));
 
       return ResponseEntity.ok(responsePage);
     } catch (Exception e) {
@@ -126,10 +127,10 @@ public class RestaurantController {
   @PutMapping("/{id}")
   @PreAuthorize("hasAnyRole('REVIEWER')")
   public ResponseEntity<RestaurantResponse> updateRestaurant(
-          @PathVariable Long id,
-          @RequestPart("restaurant") RestaurantResponse dto,
-          @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
-          Authentication authentication) {
+      @PathVariable Long id,
+      @RequestPart("restaurant") RestaurantResponse dto,
+      @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
+      Authentication authentication) {
     UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     String currentUserName = userDetails.getUsername();
     Long currentUserId = ((User) userDetails).getId();
@@ -164,14 +165,13 @@ public class RestaurantController {
     return ResponseEntity.ok(averageRating);
   }
 
-
-  //收藏餐廳
+  // 收藏餐廳
   @PostMapping("/{restaurantId}/favorite")
   @PreAuthorize("hasAnyRole('REVIEWER')")
   public ResponseEntity<String> addRestaurantToFavorites(@PathVariable Long restaurantId,
-                                                         Authentication authentication) {
+      Authentication authentication) {
     log.info("Attempting to add favorite - restaurantId: {}, authentication: {}",
-            restaurantId, authentication);
+        restaurantId, authentication);
     log.info("User authorities: {}", authentication.getAuthorities());
 
     try {
@@ -181,10 +181,10 @@ public class RestaurantController {
       log.info("Current user: {}", currentUserName);
 
       User user = userRepository.findByUsername(currentUserName)
-              .orElseThrow(() -> new RuntimeException("找不到該用戶"));
+          .orElseThrow(() -> new RuntimeException("找不到該用戶"));
       log.info("Found user: {}", user.getUsername());
 
-      Restaurant restaurant = restaurantService.getRestaurantEntityById(restaurantId);  // 使用新方法
+      Restaurant restaurant = restaurantService.getRestaurantEntityById(restaurantId); // 使用新方法
       log.info("Found restaurant: {}", restaurant.getName());
 
       userRestaurantService.addRestaurantToFavorites(user, restaurant);
@@ -201,14 +201,14 @@ public class RestaurantController {
   @DeleteMapping("/{restaurantId}/favorite")
   @PreAuthorize("hasAnyRole('REVIEWER')")
   public ResponseEntity<String> removeRestaurantFromFavorites(@PathVariable Long restaurantId,
-                                                              Authentication authentication) {
+      Authentication authentication) {
     UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     String currentUserName = userDetails.getUsername();
-    Long currentUserId = ((User) userDetails).getId();  // 獲取用戶ID
+    Long currentUserId = ((User) userDetails).getId(); // 獲取用戶ID
 
     User user = userRepository.findByUsername(currentUserName)
-            .orElseThrow(() -> new RuntimeException("找不到該用戶"));
-    Restaurant restaurant = restaurantService.getRestaurantEntityById(restaurantId);  // 使用新方法
+        .orElseThrow(() -> new RuntimeException("找不到該用戶"));
+    Restaurant restaurant = restaurantService.getRestaurantEntityById(restaurantId); // 使用新方法
 
     userRestaurantService.removeRestaurantFromFavorites(user, restaurant);
     return ResponseEntity.status(HttpStatus.CREATED).body("餐廳已移除收藏");
@@ -263,11 +263,11 @@ public class RestaurantController {
     try {
       UserDetails userDetails = (UserDetails) authentication.getPrincipal();
       String currentUserName = userDetails.getUsername();
-      Long currentUserId = ((User) userDetails).getId();  // 獲取用戶ID
+      Long currentUserId = ((User) userDetails).getId(); // 獲取用戶ID
 
       User user = userRepository.findByUsername(currentUserName)
-              .orElseThrow(() -> new RuntimeException("找不到該用戶"));
-      Restaurant restaurant = restaurantService.getRestaurantEntityById(restaurantId);  // 使用新方法
+          .orElseThrow(() -> new RuntimeException("找不到該用戶"));
+      Restaurant restaurant = restaurantService.getRestaurantEntityById(restaurantId); // 使用新方法
 
       boolean isFavorite = userRestaurantService.isRestaurantInFavorites(user, restaurant);
       return ResponseEntity.ok(isFavorite);
@@ -277,12 +277,13 @@ public class RestaurantController {
       return ResponseEntity.ok(false);
     }
   }
+
   // 獲取當前用戶 ID 的輔助方法
   private Long getCurrentUserId() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication != null && authentication.isAuthenticated()) {
       try {
-        return ((User) authentication.getPrincipal()).getId();  // 直接使用 User 類別
+        return ((User) authentication.getPrincipal()).getId(); // 直接使用 User 類別
       } catch (ClassCastException e) {
         // 如果轉型失敗，可能是未登入狀態
         return null;
