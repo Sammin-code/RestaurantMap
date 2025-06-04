@@ -120,6 +120,66 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        String path = request.getRequestURI();
+        // 圖片 API 直接放行，不做任何認證
+        if (path.startsWith("/api/images/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String method = request.getMethod();
+        logger.info("Processing request: {} {} with headers: {}", method, path,
+                Collections.list(request.getHeaderNames())
+                        .stream()
+                        .collect(Collectors.toMap(
+                                headerName -> headerName,
+                                request::getHeader)));
+
+        try {
+            String jwt = getJwtFromRequest(request);
+            logger.info("JWT token: {}", jwt != null ? "present" : "absent");
+
+            if (StringUtils.hasText(jwt)) {
+                if (jwtTokenProvider.validateToken(jwt)) {
+                    String username = jwtTokenProvider.getUsernameFromToken(jwt);
+                    String role = jwtTokenProvider.getRoleFromToken(jwt);
+                    logger.info("Valid token for user: {}, role: {}", username, role);
+
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    logger.info("Loaded user details - username: {}, authorities: {}",
+                            userDetails.getUsername(),
+                            userDetails.getAuthorities());
+
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    logger.info("Authentication set for user: {} with authorities: {}",
+                            username,
+                            authentication.getAuthorities());
+                } else {
+                    logger.warn("Invalid JWT token for request: {}", path);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"Invalid token\", \"message\": \"請重新登入\"}");
+                    return;
+                }
+            } else {
+                logger.warn("No JWT token found in request: {}", path);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\": \"No token\", \"message\": \"請先登入\"}");
+                return;
+            }
+        } catch (Exception ex) {
+            logger.error("Authentication error: {}", ex.getMessage(), ex);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Authentication failed\", \"message\": \"請重新登入\"}");
+            return;
+        }
+
         filterChain.doFilter(request, response);
     }
 
