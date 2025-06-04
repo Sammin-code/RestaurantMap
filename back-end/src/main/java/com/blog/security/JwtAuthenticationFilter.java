@@ -74,10 +74,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String servletPath = request.getServletPath();
         String pathInfo = request.getPathInfo();
         String method = request.getMethod();
-        System.out.println("[shouldNotFilter] getRequestURI: " + path + " | getServletPath: " + servletPath
-                + " | getPathInfo: " + pathInfo + " | method: " + method);
-        logger.info("[shouldNotFilter] getRequestURI: {} | getServletPath: {} | getPathInfo: {}", path,
-                servletPath, pathInfo);
+        logger.info("[shouldNotFilter] getRequestURI: {} | getServletPath: {} | getPathInfo: {} | method: {}", path,
+                servletPath, pathInfo, method);
 
         // 直接放行圖片 API（同時判斷 getRequestURI 與 getServletPath）
         if (path.startsWith("/api/images/") || (servletPath != null && servletPath.startsWith("/api/images/"))) {
@@ -129,13 +127,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String servletPath = request.getServletPath();
         String pathInfo = request.getPathInfo();
-        System.out.println("[doFilterInternal] getRequestURI: " + path + " | getServletPath: " + servletPath
-                + " | getPathInfo: " + pathInfo);
         logger.info("[doFilterInternal] getRequestURI: {} | getServletPath: {} | getPathInfo: {}", path, servletPath,
                 pathInfo);
         // 圖片 API 直接放行，不做任何認證（同時判斷 getRequestURI 與 getServletPath）
         if (path.startsWith("/api/images/") || (servletPath != null && servletPath.startsWith("/api/images/"))) {
-            System.out.println("=== IMAGE API PASS === " + path + ", servletPath: " + servletPath);
             logger.info("[doFilterInternal] Image API PASS: {} | servletPath: {}", path, servletPath);
             filterChain.doFilter(request, response);
             return;
