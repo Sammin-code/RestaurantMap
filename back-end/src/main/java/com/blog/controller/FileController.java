@@ -47,6 +47,7 @@ public class FileController {
 
   @GetMapping("/{fileName}")
   public ResponseEntity<byte[]> getImage(@PathVariable String fileName) {
+    logger.info("=== FileController.getImage called with fileName: {} ===", fileName);
     try {
       logger.info("Attempting to get image: {}", fileName);
       logger.info("Project ID: {}, Bucket: {}", projectId, bucketName);
