@@ -106,14 +106,16 @@ export function getRestaurantImageUrl(restaurant, baseUrl = 'https://restaurantm
       return restaurant.imageUrl;
     }
     
-    // 如果是完整的 URL（包括 Cloud Storage URL），直接返回
+    // 如果是完整的 URL（包括 Cloud Storage URL），使用 API 端點
     if (restaurant.imageUrl.startsWith('http')) {
-      return restaurant.imageUrl;
+      const fileName = restaurant.imageUrl.split('/').pop();
+      return `${baseUrl}/api/images/${fileName}`;
     }
     
-    // 如果是 Cloud Storage 路徑，直接使用
+    // 如果是 Cloud Storage 路徑，使用 API 端點
     if (restaurant.imageUrl.startsWith('gs://')) {
-      return restaurant.imageUrl;
+      const fileName = restaurant.imageUrl.split('/').pop();
+      return `${baseUrl}/api/images/${fileName}`;
     }
     
     // 其他情況，使用 API 路徑
@@ -122,14 +124,16 @@ export function getRestaurantImageUrl(restaurant, baseUrl = 'https://restaurantm
   
   // 如果是餐廳圖片
   if (restaurant.imageUrl) {
-    // 如果是完整的 URL（包括 Cloud Storage URL），直接返回
+    // 如果是完整的 URL（包括 Cloud Storage URL），使用 API 端點
     if (restaurant.imageUrl.startsWith('http')) {
-      return restaurant.imageUrl;
+      const fileName = restaurant.imageUrl.split('/').pop();
+      return `${baseUrl}/api/images/${fileName}`;
     }
     
-    // 如果是 Cloud Storage 路徑，直接使用
+    // 如果是 Cloud Storage 路徑，使用 API 端點
     if (restaurant.imageUrl.startsWith('gs://')) {
-      return restaurant.imageUrl;
+      const fileName = restaurant.imageUrl.split('/').pop();
+      return `${baseUrl}/api/images/${fileName}`;
     }
     
     // 其他情況，使用 API 路徑
