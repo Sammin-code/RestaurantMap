@@ -74,6 +74,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String method = request.getMethod();
         logger.info("Checking authentication for: {} {}", method, path);
 
+        // 直接放行圖片 API
+        if (path.startsWith("/api/images/")) {
+            logger.info("Image API, skipping authentication: {}", path);
+            return true;
+        }
+
         // 如果是 /uploads/ 路徑的請求，直接放行
         if (path.startsWith("/uploads/")) {
             logger.info("Uploads path, skipping authentication: {}", path);
