@@ -120,10 +120,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        System.out.println("=== TEST FILTER ONLY === " + request.getRequestURI());
         String path = request.getRequestURI();
+        System.out.println("=== FILTER PATH === " + path);
         // 圖片 API 直接放行，不做任何認證
         if (path.startsWith("/api/images/")) {
+            System.out.println("=== IMAGE API PASS === " + path);
             filterChain.doFilter(request, response);
             return;
         }
