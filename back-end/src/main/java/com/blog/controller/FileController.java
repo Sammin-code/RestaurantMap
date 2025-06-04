@@ -11,13 +11,15 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import org.springframework.beans.factory.annotation.Value;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 
 @RestController
 @RequestMapping("/api/images")
 public class FileController {
+  private static final Logger logger = LoggerFactory.getLogger(FileController.class);
 
   @Autowired
   private ImageService imageService;
@@ -46,18 +48,33 @@ public class FileController {
   @GetMapping("/{fileName}")
   public ResponseEntity<byte[]> getImage(@PathVariable String fileName) {
     try {
+      logger.info("Attempting to get image: {}", fileName);
+      logger.info("Project ID: {}, Bucket: {}", projectId, bucketName);
+
       Storage storage = StorageOptions.newBuilder()
           .setProjectId(projectId)
           .build()
           .getService();
 
       BlobId blobId = BlobId.of(bucketName, fileName);
+      logger.info("Looking for blob: {}", blobId);
+
       byte[] content = storage.readAllBytes(blobId);
+      logger.info("Successfully read image, size: {} bytes", content.length);
+
+      // 根據檔案名稱判斷圖片類型
+      MediaType mediaType = MediaType.IMAGE_JPEG;
+      if (fileName.toLowerCase().endsWith(".png")) {
+        mediaType = MediaType.IMAGE_PNG;
+      } else if (fileName.toLowerCase().endsWith(".gif")) {
+        mediaType = MediaType.IMAGE_GIF;
+      }
 
       return ResponseEntity.ok()
-          .contentType(MediaType.IMAGE_JPEG) // 或根據實際圖片類型設定
+          .contentType(mediaType)
           .body(content);
     } catch (Exception e) {
+      logger.error("Error getting image: {}", fileName, e);
       return ResponseEntity.notFound().build();
     }
   }
