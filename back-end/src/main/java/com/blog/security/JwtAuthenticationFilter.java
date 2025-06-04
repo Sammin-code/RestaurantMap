@@ -121,6 +121,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String path = request.getRequestURI();
+        // 圖片 API 直接放行，不做任何認證
+        if (path.startsWith("/api/images/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String method = request.getMethod();
         logger.info("Processing request: {} {} with headers: {}", method, path,
                 Collections.list(request.getHeaderNames())
