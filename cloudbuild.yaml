@@ -1,5 +1,19 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/restaurant-map', 'back-end']
+  args: ['build', '-t', 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/restaurantmap/restaurantmap:$COMMIT_SHA', '-f', 'back-end/Dockerfile', 'back-end']
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/restaurantmap/restaurantmap:$COMMIT_SHA']
+
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+    - 'run'
+    - 'deploy'
+    - 'restaurantmap'
+    - '--image=asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/restaurantmap/restaurantmap:$COMMIT_SHA'
+    - '--region=asia-east1'
+    - '--platform=managed'
+
 images:
-- 'gcr.io/$PROJECT_ID/restaurant-map' 
+- 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/restaurantmap/restaurantmap:$COMMIT_SHA' 
