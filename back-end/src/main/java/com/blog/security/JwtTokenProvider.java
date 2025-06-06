@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import jakarta.annotation.PostConstruct;
+
 /**
  * Class Name: JwtTokenProvider
  * Package: com.blog.config
@@ -29,11 +30,6 @@ import jakarta.annotation.PostConstruct;
  * Create: 2025/3/14
  * Version: 1.0
  */
-
-
-
-
-
 
 @Component
 public class JwtTokenProvider {
@@ -53,29 +49,21 @@ public class JwtTokenProvider {
             throw new IllegalStateException("JWT secret key cannot be null or empty");
         }
         this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        logger.info("JWT Token Provider initialized with expiration: {} ms", jwtExpiration);
     }
 
     // 生成 JWT
     public String generateToken(UserDetails userDetails) {
-        logger.info("Generating token for user: {}", userDetails.getUsername());
-
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", userDetails.getUsername());
-
         String role = userDetails.getAuthorities().stream()
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
                 .orElse("USER");
         claims.put("role", role);
-        logger.info("User role: {}", role);
-
         if (userDetails instanceof User) {
             User user = (User) userDetails;
             claims.put("userId", user.getId());
-            logger.info("User ID: {}", user.getId());
         }
-
         String token = Jwts.builder()
                 .setClaims(claims)
                 .setSubject(userDetails.getUsername())
@@ -83,31 +71,23 @@ public class JwtTokenProvider {
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(key)
                 .compact();
-
-        logger.info("Generated token: {}", token);
         return token;
     }
 
     // 從 JWT 獲取用戶名稱
     public String getUsernameFromToken(String token) {
         try {
-            logger.info("Getting username from token");
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-
             String username = claims.getSubject();
             String role = claims.get("role", String.class);
-            logger.info("Token claims - username: {}, role: {}", username, role);
-
             return username;
         } catch (ExpiredJwtException e) {
-            logger.error("JWT token is expired: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
-            logger.error("Error getting username from token: {}", e.getMessage());
             throw e;
         }
     }
@@ -115,29 +95,21 @@ public class JwtTokenProvider {
     // 驗證 JWT 是否有效
     public boolean validateToken(String token) {
         try {
-            logger.info("Validating token");
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-
             String username = claims.getSubject();
             String role = claims.get("role", String.class);
-            logger.info("Token validation successful - username: {}, role: {}", username, role);
-
             return true;
         } catch (ExpiredJwtException e) {
-            logger.error("JWT token is expired: {}", e.getMessage());
             return false;
         } catch (MalformedJwtException e) {
-            logger.error("JWT token is malformed: {}", e.getMessage());
             return false;
         } catch (SignatureException e) {
-            logger.error("JWT signature validation failed: {}", e.getMessage());
             return false;
         } catch (Exception e) {
-            logger.error("JWT validation failed: {}", e.getMessage());
             return false;
         }
     }
@@ -150,12 +122,9 @@ public class JwtTokenProvider {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-
             String role = claims.get("role", String.class);
-            logger.info("Role from token: {}", role);
             return role;
         } catch (Exception e) {
-            logger.error("Error getting role from token: {}", e.getMessage());
             return null;
         }
     }

@@ -50,7 +50,7 @@ public class ReviewController {
     private static final Logger logger = LoggerFactory.getLogger(ReviewController.class);
 
     public ReviewController(ReviewService reviewService, ReviewRepository reviewRepository,
-                            UserRepository userRepository, RestaurantService restaurantService) {
+            UserRepository userRepository, RestaurantService restaurantService) {
         this.reviewService = reviewService;
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
@@ -66,40 +66,25 @@ public class ReviewController {
             @RequestPart(value = "image", required = false) MultipartFile image,
             Authentication authentication) {
         try {
-            // 打印接收到的 JSON 字符串以便調試
-            System.out.println("Received review JSON: " + reviewJson);
-
-            // 創建 ObjectMapper 並配置忽略未知屬性
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-
-            // 解析 JSON 字符串為 Review 對象
             Review review = objectMapper.readValue(reviewJson, Review.class);
-
-            // 打印解析後的 Review 對象
-            System.out.println("Parsed review object: " + review);
-
-            // 從認證信息中獲取當前用戶
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String currentUserName = userDetails.getUsername();
-
-            // 創建評論
             Review createdReview = reviewService.createReview(restaurantId, review, image, currentUserName);
             return ResponseEntity.ok(createdReview);
         } catch (JsonProcessingException e) {
-            System.err.println("JSON parsing error: " + e.getMessage());
             return ResponseEntity.badRequest().body("Invalid review data format: " + e.getMessage());
         } catch (RuntimeException e) {
-            System.err.println("Runtime error: " + e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            System.err.println("Unexpected error: " + e.getMessage());
             return ResponseEntity.internalServerError()
                     .body("An error occurred while creating the review: " + e.getMessage());
         }
     }
-    //獲取所有評論
+
+    // 獲取所有評論
     @GetMapping("/restaurant/{restaurantId}/page")
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     public ResponseEntity<?> getAllReview(
@@ -171,7 +156,6 @@ public class ReviewController {
         }
     }
 
-
     // 取消按讚
     @DeleteMapping("/{reviewId}/like")
     @PreAuthorize("hasAnyRole('REVIEWER')")
@@ -211,7 +195,6 @@ public class ReviewController {
         return ResponseEntity.ok(imageUrl);
     }
 
-
     // 更新評論
     @PutMapping(value = "/{reviewId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('REVIEWER')")
@@ -221,32 +204,20 @@ public class ReviewController {
             @RequestPart(value = "image", required = false) MultipartFile image,
             Authentication authentication) {
         try {
-            // 打印接收到的 JSON 字符串以便調試
-            System.out.println("Received review JSON: " + reviewJson);
-
-            // 創建 ObjectMapper 並配置忽略未知屬性
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
             objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-
-            // 解析 JSON 字符串為 Review 對象
             Review review = objectMapper.readValue(reviewJson, Review.class);
-
-            // 打印解析後的 Review 對象
-            System.out.println("Parsed review object: " + review);
-
-            // 更新評論
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String currentUserName = userDetails.getUsername();
             Review updatedReview = reviewService.updateReview(reviewId, review, image, authentication);
             return ResponseEntity.ok(updatedReview);
         } catch (JsonProcessingException e) {
-            System.err.println("JSON parsing error: " + e.getMessage());
             return ResponseEntity.badRequest().body("Invalid review data format: " + e.getMessage());
         } catch (RuntimeException e) {
-            System.err.println("Runtime error: " + e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            System.err.println("Unexpected error: " + e.getMessage());
             return ResponseEntity.internalServerError()
                     .body("An error occurred while updating the review: " + e.getMessage());
         }

@@ -3,8 +3,6 @@ package com.blog.config;
 import com.blog.security.JwtAuthenticationFilter;
 import com.blog.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -41,8 +39,6 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
-
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService customUserDetailsService;
     private final PasswordEncoder passwordEncoder;
@@ -56,23 +52,17 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        logger.info("Configuring Security Filter Chain");
-
         http
                 .csrf(csrf -> {
-                    logger.info("Disabling CSRF");
                     csrf.disable();
                 })
                 .cors(cors -> {
-                    logger.info("Configuring CORS with custom configuration");
                     cors.configurationSource(corsConfigurationSource());
                 })
                 .sessionManagement(session -> {
-                    logger.info("Setting session management to STATELESS");
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
                 .authorizeHttpRequests(auth -> {
-                    logger.info("Configuring authorization rules");
                     auth
                             // 允許所有 OPTIONS 請求
                             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -117,32 +107,21 @@ public class SecurityConfig {
                 // 添加異常處理
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
-                            logger.error("Authentication error: {} - Request URI: {}, Method: {}",
-                                    authException.getMessage(),
-                                    request.getRequestURI(),
-                                    request.getMethod());
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json");
                             response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"請先登入\"}");
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            logger.error("Access denied: {} - Request URI: {}, Method: {}",
-                                    accessDeniedException.getMessage(),
-                                    request.getRequestURI(),
-                                    request.getMethod());
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             response.setContentType("application/json");
                             response.getWriter().write("{\"error\": \"Forbidden\", \"message\": \"權限不足\"}");
                         }));
 
-        logger.info("Security Filter Chain configured successfully");
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        logger.info("Configuring CORS");
-
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
@@ -152,35 +131,24 @@ public class SecurityConfig {
         configuration.setExposedHeaders(List.of("*"));
         configuration.setMaxAge(3600L);
 
-        logger.info("CORS Configuration: Allowed Origins: {}, Allowed Methods: {}, Allowed Headers: {}, Max Age: {}",
-                configuration.getAllowedOrigins(),
-                configuration.getAllowedMethods(),
-                configuration.getAllowedHeaders(),
-                configuration.getMaxAge());
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
-        logger.info("CORS configured successfully");
         return source;
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        logger.info("Configuring authentication provider");
-
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(customUserDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
 
-        logger.info("Authentication provider configured successfully");
         return provider;
     }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
             throws Exception {
-        logger.info("Configuring authentication manager");
         return authenticationConfiguration.getAuthenticationManager();
     }
 }

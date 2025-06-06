@@ -49,11 +49,12 @@ public class UserService {
     private final ReviewService reviewService;
 
     public UserService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       JwtTokenProvider jwtTokenProvider,
-                       UserRestaurantRepository userRestaurantRepository,
-                       ReviewRepository reviewRepository,
-                       AuthenticationManager authenticationManager, RestaurantRepository restaurantRepository, RestaurantService restaurantService, ReviewService reviewService) {
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider,
+            UserRestaurantRepository userRestaurantRepository,
+            ReviewRepository reviewRepository,
+            AuthenticationManager authenticationManager, RestaurantRepository restaurantRepository,
+            RestaurantService restaurantService, ReviewService reviewService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -98,25 +99,20 @@ public class UserService {
 
     // 識別用戶
     public String authenticateUser(String username, String password) {
-        logger.info("嘗試登錄用戶: {}", username);
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password));
             User user = (User) authentication.getPrincipal();
             String token = jwtTokenProvider.generateToken(user);
-            logger.info("用戶登錄成功: {}", username);
             return token;
         } catch (BadCredentialsException e) {
-            logger.warn("登錄失敗 - 用戶名或密碼錯誤: {}", username);
             throw new ValidationException("用戶名或密碼錯誤");
         } catch (Exception e) {
-            logger.error("登錄過程中發生錯誤: {}", e.getMessage());
             throw new ValidationException("登錄失敗：" + e.getMessage());
         }
     }
 
     public UserDTO getUserByUsername(String username) {
-        logger.debug("獲取用戶信息: {}", username);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("找不到該用戶，帳號：" + username));
         return new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getRole());
@@ -169,7 +165,8 @@ public class UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("找不到該用戶"));
     }
-    //獲取用戶收藏餐廳
+
+    // 獲取用戶收藏餐廳
     public List<RestaurantResponse> getUserFavoriteRestaurants(Long userId) {
         logger.debug("獲取用戶收藏的餐廳: {}", userId);
         List<Restaurant> restaurants = userRestaurantRepository.findByUserId(userId)
@@ -197,7 +194,7 @@ public class UserService {
 
             // 設定評論列表 - 轉換成 ReviewDTO
             response.setReviews(restaurant.getReviews().stream()
-                    .map(review -> toReviewDTO(review, userId))  // 使用 toReviewDTO 方法轉換
+                    .map(review -> toReviewDTO(review, userId)) // 使用 toReviewDTO 方法轉換
                     .collect(Collectors.toList()));
 
             return response;
@@ -207,7 +204,7 @@ public class UserService {
     // 獲取用戶評論
     public List<ReviewDTO> getUserReviews(Long userId) {
         logger.debug("獲取用戶的評論: {}", userId);
-        return reviewRepository.findReviewsWithDetailsByUserId(userId);  // 使用相同的 userId 作為 currentUserId
+        return reviewRepository.findReviewsWithDetailsByUserId(userId); // 使用相同的 userId 作為 currentUserId
     }
 
     // 獲取用戶創建的餐廳
@@ -237,7 +234,7 @@ public class UserService {
 
             // 設定評論列表 - 轉換成 ReviewDTO
             response.setReviews(restaurant.getReviews().stream()
-                    .map(review -> toReviewDTO(review, userId))  // 使用 toReviewDTO 方法轉換
+                    .map(review -> toReviewDTO(review, userId)) // 使用 toReviewDTO 方法轉換
                     .collect(Collectors.toList()));
 
             return response;
@@ -248,6 +245,7 @@ public class UserService {
     private UserDTO convertToDto(User user) {
         return new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getRole());
     }
+
     private ReviewDTO toReviewDTO(Review review, Long currentUserId) {
         ReviewDTO dto = new ReviewDTO();
         dto.setId(review.getId());

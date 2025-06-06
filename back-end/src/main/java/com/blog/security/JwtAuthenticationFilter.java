@@ -13,8 +13,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -32,8 +30,6 @@ import java.util.stream.Collectors;
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
-
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
 
@@ -66,7 +62,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, UserDetailsService userDetailsService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = userDetailsService;
-        logger.info("=== JwtAuthenticationFilter constructed ===");
     }
 
     @Override
@@ -75,25 +70,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String servletPath = request.getServletPath();
         String pathInfo = request.getPathInfo();
         String method = request.getMethod();
-        logger.info("[shouldNotFilter] getRequestURI: {} | getServletPath: {} | getPathInfo: {} | method: {}", path,
-                servletPath, pathInfo, method);
 
         // 直接放行圖片 API（同時判斷 getRequestURI 與 getServletPath）
         if (path.startsWith("/api/images/") || (servletPath != null && servletPath.startsWith("/api/images/"))) {
-            logger.info("[shouldNotFilter] Image API, skipping authentication: {} | servletPath: {}", path,
-                    servletPath);
             return true;
         }
 
         // 如果是 /uploads/ 路徑的請求，直接放行
         if (path.startsWith("/uploads/")) {
-            logger.info("Uploads path, skipping authentication: {}", path);
             return true;
         }
 
         // 登入和註冊請求不需要認證
         if (path.equals("/api/users/login") || path.equals("/api/users/register")) {
-            logger.info("Login/Register request, skipping authentication: {}", path);
             return true;
         }
 
@@ -101,7 +90,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         boolean isProtectedPath = PROTECTED_PATHS.stream()
                 .anyMatch(pattern -> path.matches(pattern));
         if (isProtectedPath) {
-            logger.info("Protected endpoint requires authentication: {}", path);
             return false;
         }
 
@@ -115,7 +103,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     || // 排除單個餐廳詳情
                     path.startsWith("/api/reviews/restaurant/") || // 餐廳評論
                     PUBLIC_PATHS.stream().anyMatch(path::startsWith)) { // 其他公開路徑
-                logger.debug("Public GET request, skipping authentication: {}", path);
                 return true; // 如果是公開路徑，跳過認證
             }
         }
@@ -128,68 +115,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String servletPath = request.getServletPath();
         String pathInfo = request.getPathInfo();
-        logger.info("[doFilterInternal] getRequestURI: {} | getServletPath: {} | getPathInfo: {}", path, servletPath,
-                pathInfo);
-        // 圖片 API 直接放行，不做任何認證（同時判斷 getRequestURI 與 getServletPath）
+        // 圖片 API 直接放行，不做任何認證
         if (path.startsWith("/api/images/") || (servletPath != null && servletPath.startsWith("/api/images/"))) {
-            logger.info("[doFilterInternal] Image API PASS: {} | servletPath: {}", path, servletPath);
             filterChain.doFilter(request, response);
             return;
         }
-
         String method = request.getMethod();
-        logger.info("Processing request: {} {} with headers: {}", method, path,
-                Collections.list(request.getHeaderNames())
-                        .stream()
-                        .collect(Collectors.toMap(
-                                headerName -> headerName,
-                                request::getHeader)));
 
         try {
             String jwt = getJwtFromRequest(request);
-            logger.info("JWT token: {}", jwt != null ? "present" : "absent");
-
             if (StringUtils.hasText(jwt)) {
                 if (jwtTokenProvider.validateToken(jwt)) {
                     String username = jwtTokenProvider.getUsernameFromToken(jwt);
                     String role = jwtTokenProvider.getRoleFromToken(jwt);
-                    logger.info("Valid token for user: {}, role: {}", username, role);
-
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    logger.info("Loaded user details - username: {}, authorities: {}",
-                            userDetails.getUsername(),
-                            userDetails.getAuthorities());
-
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-                    logger.info("Authentication set for user: {} with authorities: {}",
-                            username,
-                            authentication.getAuthorities());
                 } else {
-                    logger.warn("Invalid JWT token for request: {}", path);
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
                     response.getWriter().write("{\"error\": \"Invalid token\", \"message\": \"請重新登入\"}");
                     return;
                 }
             } else {
-                logger.warn("No JWT token found in request: {}", path);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
                 response.getWriter().write("{\"error\": \"No token\", \"message\": \"請先登入\"}");
                 return;
             }
         } catch (Exception ex) {
-            logger.error("Authentication error: {}", ex.getMessage(), ex);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\": \"Authentication failed\", \"message\": \"請重新登入\"}");
             return;
         }
-
         filterChain.doFilter(request, response);
     }
 
@@ -216,15 +177,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        logger.info("Authorization header: {}", bearerToken);
-
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             String token = bearerToken.substring(7);
-            logger.info("Extracted JWT token from Authorization header");
             return token;
         }
-
-        logger.info("No valid JWT token found in Authorization header");
         return null;
     }
 }

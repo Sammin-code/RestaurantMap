@@ -16,8 +16,5 @@ public class SecretGenerator {
 
   public static void main(String[] args) {
     String secret = generateSecret();
-    System.out.println("Generated JWT Secret: " + secret);
-    System.out.println("\n請將此密鑰複製到您的環境變數中：");
-    System.out.println("JWT_SECRET=" + secret);
   }
 }

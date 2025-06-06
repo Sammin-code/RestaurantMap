@@ -73,15 +73,12 @@ public class UserController {
         return ok(userDTO);
     }
 
-
-
-
     // 查看個人資訊
     @GetMapping("/{userId}")
     @PreAuthorize("hasAnyRole('REVIEWER')")
     public ResponseEntity<User> getUserProfile(
             @PathVariable Long userId) {
-    return ResponseEntity.ok(userService.getUserProfile(userId));
+        return ResponseEntity.ok(userService.getUserProfile(userId));
     }
 
     // 查看收藏的餐廳
@@ -103,37 +100,18 @@ public class UserController {
     public ResponseEntity<List<ReviewDTO>> getUserReviews(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.getUserReviews(userId));
     }
-    //查看用戶創建的餐廳
+
+    // 查看用戶創建的餐廳
     @GetMapping("/{userId}/restaurants")
     @PreAuthorize("hasAnyRole('REVIEWER')")
     public ResponseEntity<List<RestaurantResponse>> getUserCreatedRestaurants(@PathVariable Long userId) {
-        log.info("開始獲取用戶創建的餐廳, userId: {}", userId);
-
         List<RestaurantResponse> responseList = userService.getUserCreatedRestaurants(userId);
-
-        // 添加詳細的日誌
         responseList.forEach(restaurant -> {
-            log.info("餐廳數據 - ID: {}, 名稱: {}", restaurant.getId(), restaurant.getName());
-            log.info("評論數: {}", restaurant.getReviewCount());
-            log.info("平均評分: {}", restaurant.getAverageRating());
-            log.info("評論列表大小: {}", restaurant.getReviews() != null ? restaurant.getReviews().size() : 0);
-
-            // 如果有評論，計算實際的平均評分
-            if (restaurant.getReviews() != null && !restaurant.getReviews().isEmpty()) {
-                double actualAverage = restaurant.getReviews().stream()
-                        .mapToInt(review -> review.getRating())
-                        .average()
-                        .orElse(0.0);
-                log.info("實際計算的平均評分: {}", actualAverage);
-            }
+            // 已移除詳細日誌
         });
-
         if (responseList.isEmpty()) {
-            log.info("用戶沒有創建的餐廳");
             return ResponseEntity.noContent().build();
         }
-
-        log.info("成功獲取用戶創建的餐廳列表，共 {} 間餐廳", responseList.size());
         return ResponseEntity.ok(responseList);
     }
 
