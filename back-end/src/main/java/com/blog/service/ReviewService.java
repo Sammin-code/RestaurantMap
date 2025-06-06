@@ -40,15 +40,18 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewLikeRepository reviewLikeRepository;
     private final UserRepository userRepository;
+    private final ImageService imageService;
     private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
     @Autowired
     public ReviewService(RestaurantService restaurantService, ReviewRepository reviewRepository,
-            ReviewLikeRepository reviewLikeRepository, UserRepository userRepository) {
+            ReviewLikeRepository reviewLikeRepository, UserRepository userRepository,
+            ImageService imageService) {
         this.restaurantService = restaurantService;
         this.reviewRepository = reviewRepository;
         this.reviewLikeRepository = reviewLikeRepository;
         this.userRepository = userRepository;
+        this.imageService = imageService;
     }
 
     // 新增評論
@@ -56,10 +59,10 @@ public class ReviewService {
         // 獲取當前用戶
         User user = userRepository.findByUsername(currentUserName)
                 .orElseThrow(() -> new RuntimeException("找不到當前用戶"));
-        Long currentUserId = user.getId();  // 獲取用戶ID
+        Long currentUserId = user.getId(); // 獲取用戶ID
 
         // 獲取餐廳
-        Restaurant restaurant = restaurantService.getRestaurantEntityById(restaurantId);  // 使用新方法
+        Restaurant restaurant = restaurantService.getRestaurantEntityById(restaurantId); // 使用新方法
         review.setRestaurant(restaurant);
 
         // 設置用戶
@@ -67,8 +70,12 @@ public class ReviewService {
 
         // 處理圖片上傳
         if (image != null && !image.isEmpty()) {
-            String imageUrl = uploadReviewImage(image);
-            review.setImageUrl(imageUrl);
+            try {
+                String imageUrl = imageService.uploadImage(image);
+                review.setImageUrl(imageUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("圖片上傳失敗", e);
+            }
         }
 
         // 設置創建時間
@@ -79,6 +86,7 @@ public class ReviewService {
         updateRestaurantRating(restaurantId);
         return savedReview;
     }
+
     // 獲取餐廳評論（帶分頁、排序和統計）
     public Map<String, Object> getRestaurantReviewsWithPagination(
             Long restaurantId,
@@ -113,8 +121,7 @@ public class ReviewService {
                 page,
                 size,
                 starDistribution,
-                averageRating
-        );
+                averageRating);
     }
 
     public List<ReviewDTO> getAllReview(Long restaurantId) {
@@ -124,6 +131,7 @@ public class ReviewService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+
     // 將 Review 實體轉換為 ReviewDTO
     private ReviewDTO convertToDTO(Review review) {
         ReviewDTO dto = new ReviewDTO();
@@ -136,7 +144,7 @@ public class ReviewService {
         dto.setImageUrl(review.getImageUrl());
 
         if (review.getUser() != null) {
-            dto.setUserId(review.getUserId());  // 使用實體中的 getUserId 方法
+            dto.setUserId(review.getUserId()); // 使用實體中的 getUserId 方法
             dto.setUsername(review.getUser().getUsername());
             dto.setUserRole(review.getUser().getRole());
         }
@@ -146,8 +154,8 @@ public class ReviewService {
             dto.setRestaurantName(review.getRestaurant().getName());
         }
 
-        dto.setLikeCount(review.getLikes().size());  // 直接使用 likes 集合的大小
-        dto.setIsLiked(false);  // 默認值，需要根據當前用戶設置
+        dto.setLikeCount(review.getLikes().size()); // 直接使用 likes 集合的大小
+        dto.setIsLiked(false); // 默認值，需要根據當前用戶設置
 
         dto.setIsEdited(review.getCreated_At() != null &&
                 review.getUpdated_At() != null &&
@@ -155,12 +163,14 @@ public class ReviewService {
 
         return dto;
     }
+
     // 根據點讚數排序
     private List<ReviewDTO> sortReviewsByLikes(List<ReviewDTO> reviews) {
         return reviews.stream()
-                .sorted((r1, r2) -> r2.getLikeCount().compareTo(r1.getLikeCount()))  // 降序排序
+                .sorted((r1, r2) -> r2.getLikeCount().compareTo(r1.getLikeCount())) // 降序排序
                 .collect(Collectors.toList());
     }
+
     // 構建分頁響應
     private Map<String, Object> buildPaginationResponse(
             List<ReviewDTO> content,
@@ -186,9 +196,7 @@ public class ReviewService {
     private List<ReviewDTO> applyPagination(List<ReviewDTO> reviews, int page, int size) {
         int fromIndex = page * size;
         int toIndex = Math.min(fromIndex + size, reviews.size());
-        return (fromIndex < reviews.size()) ?
-                reviews.subList(fromIndex, toIndex) :
-                List.of();
+        return (fromIndex < reviews.size()) ? reviews.subList(fromIndex, toIndex) : List.of();
     }
 
     // 計算星等分布
@@ -222,8 +230,6 @@ public class ReviewService {
         // 計算平均分
         return (double) totalRating / reviews.size();
     }
-
-
 
     // 刪除評論
     @PreAuthorize("hasRole('ADMIN') or @reviewService.isReviewOwner(#reviewId, authentication.name)")
@@ -304,19 +310,6 @@ public class ReviewService {
         return reviewLikeRepository.countByReview(review);
     }
 
-    // 上傳圖片
-    public String uploadReviewImage(MultipartFile image) {
-        String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
-        Path filePath = Paths.get("uploads/" + fileName);
-        try {
-            Files.createDirectories(filePath.getParent()); // 確保目錄存在
-            Files.write(filePath, image.getBytes());
-        } catch (IOException e) {
-            throw new RuntimeException("圖片上傳失敗", e);
-        }
-        return "/uploads/" + fileName;
-    }
-
     // 更新評論
     public Review updateReview(Long reviewId, Review review, MultipartFile image, Authentication authentication) {
         User user = (User) authentication.getPrincipal();
@@ -334,8 +327,12 @@ public class ReviewService {
 
         // 處理圖片上傳
         if (image != null && !image.isEmpty()) {
-            String imageUrl = uploadReviewImage(image);
-            existingReview.setImageUrl(imageUrl);
+            try {
+                String imageUrl = imageService.uploadImage(image);
+                existingReview.setImageUrl(imageUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("圖片上傳失敗", e);
+            }
         } else if (review.getImageUrl() != null) {
             existingReview.setImageUrl(review.getImageUrl());
         }
@@ -344,8 +341,6 @@ public class ReviewService {
         updateRestaurantRating(existingReview.getRestaurant().getId());
         return updatedReview;
     }
-
-
 
     public Review getReviewById(Long id) {
         return reviewRepository.findById(id)
@@ -368,10 +363,10 @@ public class ReviewService {
         return savedReview;
     }
 
-
     private void updateRestaurantRating(Long restaurantId) {
         restaurantService.calculateAverageRating(restaurantId);
     }
+
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
@@ -381,6 +376,5 @@ public class ReviewService {
         }
         return null;
     }
-
 
 }

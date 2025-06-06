@@ -24,6 +24,8 @@ import com.blog.model.User;
 import com.blog.repository.UserRepository;
 import org.hibernate.Hibernate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.blog.service.ImageService;
+import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,14 +49,17 @@ public class ReviewController {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final RestaurantService restaurantService;
+    private final ImageService imageService;
     private static final Logger logger = LoggerFactory.getLogger(ReviewController.class);
 
     public ReviewController(ReviewService reviewService, ReviewRepository reviewRepository,
-            UserRepository userRepository, RestaurantService restaurantService) {
+            UserRepository userRepository, RestaurantService restaurantService,
+            ImageService imageService) {
         this.reviewService = reviewService;
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
         this.restaurantService = restaurantService;
+        this.imageService = imageService;
     }
 
     // 新增評論
@@ -191,8 +196,13 @@ public class ReviewController {
     @PostMapping("/{restaurantId}/upload")
     public ResponseEntity<String> uploadReviewImage(@PathVariable Long restaurantId,
             @RequestParam("image") MultipartFile image) {
-        String imageUrl = reviewService.uploadReviewImage(image);
-        return ResponseEntity.ok(imageUrl);
+        try {
+            String imageUrl = imageService.uploadImage(image);
+            return ResponseEntity.ok(imageUrl);
+        } catch (IOException e) {
+            logger.error("Error uploading image: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     // 更新評論
