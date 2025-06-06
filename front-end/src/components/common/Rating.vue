@@ -121,9 +121,6 @@ const handleRatingChange = (value) => {
   emit('update:modelValue', value);
   emit('change', value);
 };
-
-console.log('Rating total prop:', props.total);
-console.log('Rating distribution prop:', props.distribution);
 </script>
 
 <style scoped>

@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus';
 import { useUserStore } from './user';
 import { useRouter } from 'vue-router';
 import { reviewApi } from '@/services/api';
+import { getImageUrl } from '@/utils/imageHelper';
 
 const useReviewStore = defineStore('review', () => {
   const router = useRouter();
@@ -39,7 +40,7 @@ const useReviewStore = defineStore('review', () => {
     }
   };
 
-  const createReview = async (restaurantId, reviewData) => {
+  const createReview = async (restaurantId, formData) => {
     if (!userStore.isLoggedIn) {
       ElMessage.warning('請先登入');
       router.push('/login');
@@ -50,33 +51,25 @@ const useReviewStore = defineStore('review', () => {
     error.value = null;
     
     try {
-      const formData = new FormData();
-      
-      formData.append('review', JSON.stringify({
-        rating: Number(reviewData.rating),
-        content: String(reviewData.content).trim(),
-        imageUrl: reviewData.imageUrl || ''
-      }));
-      
-      if (reviewData.imageFile) {
-        formData.append('image', reviewData.imageFile);
-      }
-      
-      console.log('Review Data:', {
-        rating: reviewData.rating,
-        content: reviewData.content,
-        imageFile: reviewData.imageFile ? 'Has file' : 'No file',
-        imageUrl: reviewData.imageUrl || ''
-      });
-      
-      console.log('FormData:', {
-        review: formData.get('review'),
+      // 添加除錯日誌
+      console.log('Creating review:', {
+        restaurantId,
+        hasReview: formData.has('review'),
         hasImage: formData.has('image')
       });
       
       const response = await reviewApi.createReview(restaurantId, formData);
+      console.log('Review created successfully:', response.data);
+      
+      // 處理圖片 URL
+      if (response.data.imageUrl) {
+        response.data.imageUrl = getImageUrl(response.data.imageUrl);
+      }
+      
+      // 更新本地評論列表
       reviews.value.unshift(response.data);
-      ElMessage.success('評論發表成功');
+      
+      ElMessage.success('評論發布成功');
       return response.data;
     } catch (err) {
       error.value = err.message;
@@ -84,19 +77,14 @@ const useReviewStore = defineStore('review', () => {
       if (err.response) {
         console.error('Error Response:', err.response.data);
       }
-      if (err.response?.status === 401) {
-        userStore.logout();
-        ElMessage.error('登入已過期，請重新登入');
-      } else {
-        ElMessage.error('發表評論失敗');
-      }
+      ElMessage.error('發布評論失敗');
       throw err;
     } finally {
       loading.value = false;
     }
   };
 
-  const updateReview = async (reviewId, reviewData) => {
+  const updateReview = async (reviewId, formData) => {
     if (!userStore.isLoggedIn) {
       ElMessage.warning('請先登入');
       router.push('/login');
@@ -107,35 +95,27 @@ const useReviewStore = defineStore('review', () => {
     error.value = null;
     
     try {
-      const formData = new FormData();
-      
-      formData.append('review', JSON.stringify({
-        rating: Number(reviewData.rating),
-        content: String(reviewData.content).trim(),
-        imageUrl: reviewData.imageUrl || ''
-      }));
-      
-      if (reviewData.imageFile) {
-        formData.append('image', reviewData.imageFile);
-      }
-      
-      console.log('Review Data:', {
-        rating: reviewData.rating,
-        content: reviewData.content,
-        imageFile: reviewData.imageFile ? 'Has file' : 'No file',
-        imageUrl: reviewData.imageUrl || ''
-      });
-      
-      console.log('FormData:', {
-        review: formData.get('review'),
+      // 添加除錯日誌
+      console.log('Updating review:', {
+        reviewId,
+        hasReview: formData.has('review'),
         hasImage: formData.has('image')
       });
       
       const response = await reviewApi.updateReview(reviewId, formData);
+      console.log('Review updated successfully:', response.data);
+      
+      // 處理圖片 URL
+      if (response.data.imageUrl) {
+        response.data.imageUrl = getImageUrl(response.data.imageUrl);
+      }
+      
+      // 更新本地評論列表
       const index = reviews.value.findIndex(r => r.id === reviewId);
       if (index !== -1) {
         reviews.value[index] = response.data;
       }
+      
       ElMessage.success('評論更新成功');
       return response.data;
     } catch (err) {

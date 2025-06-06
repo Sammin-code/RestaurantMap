@@ -331,10 +331,14 @@ const restaurantApi = {
     api.get(`/reviews/restaurant/${restaurantId}`, { params: { page, size } }),
   
   // 創建評論
-  createReview: (restaurantId, reviewData) => {
+  createReview: (restaurantId, formData) => {
     const token = localStorage.getItem('token');
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    return api.post(`/reviews/${restaurantId}`, reviewData, { headers });
+    const headers = {
+      'Authorization': token ? `Bearer ${token}` : '',
+      'Content-Type': 'multipart/form-data',
+      'Accept': 'application/json'
+    };
+    return api.post(`/reviews/${restaurantId}`, formData, { headers });
   },
   
   // 刪除評論

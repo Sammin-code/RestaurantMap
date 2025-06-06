@@ -13,10 +13,14 @@
     >
       <el-form-item label="評分" prop="rating">
         <Rating
-          v-model="form.rating"
+          :model-value="form.rating"
           :disabled="false"
           :show-text="true"
           :show-distribution="false"
+          @update:model-value="(value) => {
+            console.log('Rating changed:', value);
+            form.rating = Number(value);
+          }"
         />
       </el-form-item>
       
@@ -58,6 +62,8 @@ import { useUserStore } from '@/stores/user';
 import Rating from '@/components/common/Rating.vue';
 import ImageUploader from '@/components/common/ImageUploader.vue';
 import { handleError } from '@/utils/errorHandler';
+import { useRouter } from 'vue-router';
+import { reviewApi } from '@/services/api';
 
 const props = defineProps({
   visible: {
@@ -87,12 +93,14 @@ const formRef = ref(null);
 const submitting = ref(false);
 const reviewStore = useReviewStore();
 const userStore = useUserStore();
+const router = useRouter();
 
 const form = reactive({
   rating: 5,
   content: '',
   imageUrl: '',
-  imageFile: null
+  imageFile: null,
+  imagePreview: null
 });
 
 const rules = {
@@ -110,122 +118,108 @@ watch(() => props.review, (newReview) => {
     form.content = newReview.content;
     form.imageUrl = newReview.imageUrl || '';  // 確保 imageUrl 不為 undefined
     form.imageFile = null;  // 重置 imageFile
+    // 如果有現有圖片，設置預覽
+    if (newReview.imageUrl) {
+      form.imagePreview = newReview.imageUrl;
+    } else {
+      form.imagePreview = null;
+    }
   } else {
     form.rating = 5;
     form.content = '';
     form.imageUrl = '';
     form.imageFile = null;
+    form.imagePreview = null;
   }
 }, { immediate: true });
 
 const handleImageChange = (file) => {
-  if (!file) {
-    form.imageFile = null;
-    form.imageUrl = '';
-    return;
-  }
-
-  try {
+  if (file) {
     // 檢查文件類型
-    const isImage = file.raw?.type?.startsWith('image/');
+    const isImage = file.type.startsWith('image/');
     if (!isImage) {
-      ElMessage.error('請上傳圖片文件');
+      ElMessage.error('只能上傳圖片文件');
       return;
     }
 
-    // 檢查文件大小
-    const isLt5M = file.raw?.size / 1024 / 1024 < 5;
+    // 檢查文件大小（限制為 5MB）
+    const isLt5M = file.size / 1024 / 1024 < 5;
     if (!isLt5M) {
       ElMessage.error('圖片大小不能超過 5MB');
       return;
     }
 
-    form.imageFile = file.raw;
-    // 創建一個新的 blob URL
-    const blobUrl = URL.createObjectURL(file.raw);
-    form.imageUrl = blobUrl;
-    
-    // 添加日誌
-    console.log('Image changed:', {
-      hasFile: !!form.imageFile,
-      imageUrl: form.imageUrl,
-      blobUrl: blobUrl
-    });
-  } catch (error) {
-    console.error('Error creating blob URL:', error);
-    ElMessage.error('圖片處理失敗，請重試');
-    form.imageFile = null;
-    form.imageUrl = '';
+    form.imageFile = file;
+    // 創建預覽 URL
+    form.imagePreview = URL.createObjectURL(file);
   }
 };
-
-// 在組件卸載時清理 blob URL
-onBeforeUnmount(() => {
-  if (form.imageUrl && form.imageUrl.startsWith('blob:')) {
-    URL.revokeObjectURL(form.imageUrl);
-  }
-});
 
 const handleClose = () => {
   dialogVisible.value = false;
   formRef.value?.resetFields();
   form.imageUrl = '';
   form.imageFile = null;
+  form.imagePreview = null;
 };
 
 const handleSubmit = async () => {
-  if (!userStore.checkLogin()) return;
-  
+  if (!form.rating) {
+    ElMessage.warning('請選擇評分');
+    return;
+  }
+
+  if (!form.content.trim()) {
+    ElMessage.warning('請輸入評論內容');
+    return;
+  }
+
   try {
-    submitting.value = true;
-    
-    // 驗證表單
-    await formRef.value.validate();
-    
-    // 檢查評論內容是否為空或只包含空格
-    if (!form.content.trim()) {
-      ElMessage.warning('評論內容不能為空');
-      return;
-    }
-    
-    // 檢查評論內容長度
-    if (form.content.length > 1000) {
-      ElMessage.warning('評論內容不能超過1000字');
-      return;
-    }
-    
-    // 添加日誌
-    console.log('Form Data:', {
-      rating: form.rating,
-      content: form.content.trim(),
-      imageFile: form.imageFile ? 'Has file' : 'No file',
-      imageUrl: form.imageUrl
-    });
-    
+    const reviewData = {
+      rating: Number(form.rating),
+      content: form.content.trim()
+    };
+
+    console.log('Submitting review data:', reviewData);
+    console.log('Has image file:', !!form.imageFile);
+
     const formData = new FormData();
-    formData.append('rating', form.rating);
-    formData.append('content', form.content);
+    formData.append('review', JSON.stringify(reviewData));
     
     if (form.imageFile) {
-      formData.append('file', form.imageFile);
+      formData.append('image', form.imageFile);
+      console.log('Image file details:', {
+        name: form.imageFile.name,
+        type: form.imageFile.type,
+        size: form.imageFile.size
+      });
     }
-    
-    if (isEdit.value) {
-      await reviewStore.updateReview(props.restaurantId, props.review.id, formData);
-      ElMessage.success('評論更新成功');
+
+    console.log('Form data review:', formData.get('review'));
+    console.log('Form data has image:', formData.has('image'));
+
+    if (props.review) {
+      // 更新現有評論
+      await reviewStore.updateReview(props.review.id, formData);
     } else {
+      // 創建新評論
       await reviewStore.createReview(props.restaurantId, formData);
-      ElMessage.success('評論發布成功');
     }
-    
-    dialogVisible.value = false;
+
+    ElMessage.success(props.review ? '評論更新成功' : '評論發布成功');
     emit('success');
   } catch (error) {
-    handleError(error, isEdit.value ? '評論更新失敗' : '評論發布失敗');
-  } finally {
-    submitting.value = false;
+    console.error('Review submission error:', error);
+    ElMessage.error(props.review ? '更新評論失敗' : '發布評論失敗');
   }
 };
+
+// 在組件卸載時清理預覽 URL
+onBeforeUnmount(() => {
+  if (form.imagePreview) {
+    URL.revokeObjectURL(form.imagePreview);
+  }
+});
 </script>
 
 <style scoped>

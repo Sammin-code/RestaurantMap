@@ -181,4 +181,50 @@ export function handleRestaurantImageError(event, restaurant, baseUrl = 'http://
     console.error('Image error handling failed:', error);
     event.target.src = isReview ? getBackupImageUrl(restaurant, true) : defaultRestaurantImage;
   }
+}
+
+/**
+ * 獲取圖片 URL（用於評論圖片）
+ * @param {string} imagePath - 圖片路徑
+ * @returns {string} 完整的圖片 URL
+ */
+export const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  
+  // 使用與餐廳圖片相同的基礎 URL
+  const baseUrl = 'https://restaurantmap-255668913932.asia-east1.run.app';
+  
+  // 如果已經是完整的 URL，提取檔名
+  if (imagePath.startsWith('http')) {
+    const fileName = imagePath.split('/').pop();
+    // 如果是評論圖片（包含 uploads 路徑）
+    if (imagePath.includes('/uploads/')) {
+      return `${baseUrl}/api/images/uploads/${fileName}`;
+    }
+    // 如果是餐廳圖片
+    return `${baseUrl}/api/images/${fileName}`;
+  }
+  
+  // 如果是 Cloud Storage 路徑，使用 API 端點
+  if (imagePath.startsWith('gs://')) {
+    const fileName = imagePath.split('/').pop();
+    return `${baseUrl}/api/images/${fileName}`;
+  }
+  
+  // 其他情況，使用 API 路徑
+  // 如果是評論圖片（包含 uploads 路徑）
+  if (imagePath.includes('uploads/')) {
+    return `${baseUrl}/api/images/uploads/${imagePath.replace(/^\/+/, '')}`;
+  }
+  // 如果是餐廳圖片
+  return `${baseUrl}/api/images/${imagePath.replace(/^\/+/, '')}`;
+};
+
+/**
+ * 評論圖片錯誤處理函數
+ * @param {Event} event - 圖片錯誤事件
+ */
+export function handleReviewImageError(event) {
+  console.error('Image load error:', event.target.src);
+  event.target.src = defaultRestaurantImage;
 } 

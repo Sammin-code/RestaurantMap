@@ -65,7 +65,7 @@
           更新
         </el-button>
         <el-button 
-          v-if="isAdmin && showDeleteButton"
+          v-if="(isOwner || isAdmin) && showDeleteButton"
           type="danger" 
           size="small" 
           @click="handleDelete"

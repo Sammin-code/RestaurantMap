@@ -30,6 +30,9 @@ public class UserDTO {
     public UserDTO(Long id, String username, String email, String profilePicture) {
     }
 
+    public UserDTO(Long id, String username, String email) {
+    }
+
     public Long getId() {
         return id;
     }

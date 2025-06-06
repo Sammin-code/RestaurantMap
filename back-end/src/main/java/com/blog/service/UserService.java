@@ -130,12 +130,10 @@ public class UserService {
         }
 
         user.setEmail(userUpdateDTO.getEmail());
-        user.setProfilePicture(userUpdateDTO.getProfilePicture());
 
         User updatedUser = userRepository.save(user);
         logger.info("用戶資料更新成功: {}", userId);
-        return new UserDTO(updatedUser.getId(), updatedUser.getUsername(), updatedUser.getEmail(),
-                updatedUser.getProfilePicture());
+        return new UserDTO(updatedUser.getId(), updatedUser.getUsername(), updatedUser.getEmail());
     }
 
     // 用戶變換密碼

@@ -74,26 +74,21 @@
         
         <div class="review-content">
           <p class="review-text">{{ review.content }}</p>
-          <el-image
-            v-if="review.imageUrl && !review.imageUrl.startsWith('blob:')"
-            :src="getRestaurantImageUrl(review, 'http://localhost:8080', true)"
-            fit="cover"
-            class="review-image"
-            @error="(e) => handleRestaurantImageError(e, review, 'http://localhost:8080', true)"
-          >
-            <template #placeholder>
-              <div class="image-loading">
-                <el-icon><Loading /></el-icon>
-                <div>載入中...</div>
-              </div>
-            </template>
-            <template #error>
-              <div class="image-placeholder">
-                <el-icon><Picture /></el-icon>
-                <div>圖片載入失敗</div>
-              </div>
-            </template>
-          </el-image>
+          <div v-if="review.imageUrl" class="review-image">
+            <el-image
+              :src="getImageUrl(review.imageUrl)"
+              :preview-src-list="[getImageUrl(review.imageUrl)]"
+              fit="cover"
+              @error="handleReviewImageError"
+            >
+              <template #error>
+                <div class="image-error">
+                  <el-icon><Picture /></el-icon>
+                  <span>圖片載入失敗</span>
+                </div>
+              </template>
+            </el-image>
+          </div>
         </div>
         
         <div class="review-footer">
@@ -254,7 +249,7 @@ import Rating from '@/components/common/Rating.vue';
 import { useRouter } from 'vue-router';
 import { handleError } from '@/utils/errorHandler';
 import { reviewApi } from '@/services/api';
-import { getRestaurantImageUrl, handleRestaurantImageError } from '@/utils/imageHelper';
+import { getImageUrl, handleReviewImageError } from '@/utils/imageHelper';
 
 const props = defineProps({
   restaurantId: {
