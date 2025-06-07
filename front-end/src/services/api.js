@@ -4,7 +4,7 @@ import { useUserStore } from '@/stores/user';
 import router from '@/router';
 
 const api = axios.create({
-  baseURL: 'https://restaurantmap-255668913932.asia-east1.run.app/api',
+  baseURL: import.meta.env.VITE_API_URL,
   timeout: 15000,
   withCredentials: false
 });
