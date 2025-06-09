@@ -1,13 +1,13 @@
 steps:
   # 構建 Docker 映像
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/frontend/restaurant-map:$COMMIT_SHA', '-t', 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/frontend/restaurant-map:latest', '-f', 'front-end/Dockerfile', 'front-end']
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/github.com/sammin-code/restaurantmap:$COMMIT_SHA', '-t', 'gcr.io/$PROJECT_ID/github.com/sammin-code/restaurantmap:latest', '-f', 'front-end/Dockerfile', 'front-end']
 
   # 推送映像到 Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/frontend/restaurant-map:$COMMIT_SHA']
+    args: ['push', 'gcr.io/$PROJECT_ID/github.com/sammin-code/restaurantmap:$COMMIT_SHA']
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/frontend/restaurant-map:latest']
+    args: ['push', 'gcr.io/$PROJECT_ID/github.com/sammin-code/restaurantmap:latest']
 
   # 部署到 Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -17,7 +17,7 @@ steps:
       - 'deploy'
       - 'restaurant-map-frontend'
       - '--image'
-      - 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/frontend/restaurant-map:latest'
+      - 'gcr.io/$PROJECT_ID/github.com/sammin-code/restaurantmap:latest'
       - '--region'
       - 'asia-east1'
       - '--platform'
@@ -25,5 +25,5 @@ steps:
       - '--allow-unauthenticated'
 
 images:
-  - 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/frontend/restaurant-map:$COMMIT_SHA'
-  - 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/frontend/restaurant-map:latest' 
+  - 'gcr.io/$PROJECT_ID/github.com/sammin-code/restaurantmap:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/github.com/sammin-code/restaurantmap:latest' 
