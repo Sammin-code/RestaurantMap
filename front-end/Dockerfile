@@ -10,7 +10,7 @@ COPY package*.json ./
 # 安裝依賴
 RUN npm install
 
-# 複製所有源代碼
+# 複製所有源代碼和 .env 檔案
 COPY . .
 
 # 構建應用
@@ -21,6 +21,9 @@ FROM nginx:alpine
 
 # 複製構建好的文件到 nginx 目錄
 COPY --from=build /app/dist /usr/share/nginx/html
+
+# 複製 .env 檔案到 nginx 目錄
+COPY --from=build /app/.env /usr/share/nginx/html/.env
 
 # 複製 nginx 配置
 COPY nginx.conf /etc/nginx/conf.d/default.conf
