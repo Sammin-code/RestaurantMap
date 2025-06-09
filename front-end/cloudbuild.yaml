@@ -12,13 +12,15 @@ steps:
     entrypoint: gcloud
     args:
       - 'run'
-      - 'services'
-      - 'replace'
-      - 'cloudrun.yaml'
+      - 'deploy'
+      - 'restaurant-map-frontend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/restaurant-map-frontend:$COMMIT_SHA'
       - '--region'
       - 'asia-east1'
       - '--platform'
       - 'managed'
+      - '--allow-unauthenticated'
 
 images:
   - 'gcr.io/$PROJECT_ID/restaurant-map-frontend:$COMMIT_SHA' 
