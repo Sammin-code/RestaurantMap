@@ -10,8 +10,11 @@ COPY package*.json ./
 # 安裝依賴
 RUN npm install
 
-# 複製所有源代碼和 .env 檔案
+# 複製所有源代碼
 COPY . .
+
+# 設置環境變數
+ENV VITE_API_URL=https://restaurantmap-255668913932.asia-east1.run.app/api
 
 # 構建應用
 RUN npm run build
@@ -21,9 +24,6 @@ FROM nginx:alpine
 
 # 複製構建好的文件到 nginx 目錄
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# 複製 .env 檔案到 nginx 目錄
-COPY --from=build /app/.env /usr/share/nginx/html/.env
 
 # 複製 nginx 配置
 COPY nginx.conf /etc/nginx/conf.d/default.conf
