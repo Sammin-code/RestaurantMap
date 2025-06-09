@@ -126,6 +126,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "http://localhost",
+                "https://restaurant-map-frontend-255668913932.asia-east1.run.app",
                 "https://restaurantmap-255668913932.asia-east1.run.app"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
