@@ -166,7 +166,7 @@ const fetchRestaurantDetails = async () => {
     if (response.data.coverImage) {
       imageUrl.value = response.data.coverImage;
     } else {
-      imageUrl.value = defaultRestaurantImage;
+      imageUrl.value = '';  // 不顯示預設圖片
     }
     
   } catch (error) {
@@ -198,9 +198,9 @@ const handleImageChange = (file) => {
   imageFile.value = file.raw;
 };
 
-// 處理圖片載入錯誤
-const handleImageError = (e) => {
-  handleRestaurantImageError(e, { imageUrl: imageUrl.value });
+// 處理圖片錯誤
+const handleImageError = () => {
+  imageUrl.value = '';  // 載入失敗時不顯示預設圖片
 };
 
 // 處理圖片上傳
@@ -220,47 +220,42 @@ const handleImageRemove = () => {
 const submitForm = async () => {
   if (!formRef.value) return;
   
-  await formRef.value.validate(async (valid) => {
-    if (valid) {
-      try {
-        loading.value = true;
-        
-        const formData = new FormData();
-        
-        // 將餐廳數據作為字符串添加到 FormData
-        const restaurantData = {
-          name: restaurantForm.name,
-          description: restaurantForm.description,
-          address: restaurantForm.address,
-          phone: restaurantForm.phone,
-          category: restaurantForm.category
-        };
-        
-        formData.append('restaurant', new Blob([JSON.stringify(restaurantData)], {
-          type: 'application/json'
-        }));
-        
-        // 如果有新圖片，添加到 FormData
-        if (imageFile.value) {
-          formData.append('coverImage', imageFile.value);
-        }
-        
-        if (isEdit.value) {
-          await restaurantApi.updateRestaurant(restaurantId.value, formData);
-          ElMessage.success('餐廳資料更新成功');
-        } else {
-          await restaurantApi.create(formData);
-          ElMessage.success('餐廳創建成功');
-        }
-        
-        goBack();
-      } catch (error) {
-        handleError(error);
-      } finally {
-        loading.value = false;
-      }
+  try {
+    await formRef.value.validate();
+    
+    const formData = new FormData();
+    formData.append('restaurant', JSON.stringify({
+      name: restaurantForm.name,
+      description: restaurantForm.description,
+      address: restaurantForm.address,
+      phone: restaurantForm.phone,
+      category: restaurantForm.category
+    }));
+
+    // 如果有新圖片，添加新圖片
+    if (imageFile.value) {
+      formData.append('image', imageFile.value);
     }
-  });
+    // 如果原本有圖片但現在沒有，發送空文件
+    else if (imageUrl.value === '') {
+      const emptyFile = new File([], 'empty.jpg', { type: 'image/jpeg' });
+      formData.append('image', emptyFile);
+      console.log('Sending empty file to remove image');
+    }
+
+    let response;
+    if (isEdit.value) {
+      response = await restaurantApi.updateRestaurant(restaurantId.value, formData);
+      ElMessage.success('餐廳已更新');
+    } else {
+      response = await restaurantApi.createRestaurant(formData);
+      ElMessage.success('餐廳已創建');
+    }
+    
+    router.push('/restaurants');
+  } catch (error) {
+    handleError(error);
+  }
 };
 
 // 返回上一頁

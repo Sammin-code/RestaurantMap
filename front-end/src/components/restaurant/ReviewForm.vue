@@ -186,6 +186,7 @@ const handleSubmit = async () => {
     const formData = new FormData();
     formData.append('review', JSON.stringify(reviewData));
     
+    // 如果有新圖片，添加新圖片
     if (form.imageFile) {
       formData.append('image', form.imageFile);
       console.log('Image file details:', {
@@ -193,24 +194,32 @@ const handleSubmit = async () => {
         type: form.imageFile.type,
         size: form.imageFile.size
       });
+    } 
+    // 如果原本有圖片但現在沒有，發送空文件
+    else if (props.review?.imageUrl && !form.imageUrl) {
+      const emptyFile = new File([], 'empty.jpg', { type: 'image/jpeg' });
+      formData.append('image', emptyFile);
+      console.log('Sending empty file to remove image');
     }
 
     console.log('Form data review:', formData.get('review'));
     console.log('Form data has image:', formData.has('image'));
 
-    if (props.review) {
-      // 更新現有評論
+    submitting.value = true;
+    if (isEdit.value) {
       await reviewStore.updateReview(props.review.id, formData);
+      ElMessage.success('評論已更新');
     } else {
-      // 創建新評論
       await reviewStore.createReview(props.restaurantId, formData);
+      ElMessage.success('評論已發表');
     }
-
-    ElMessage.success(props.review ? '評論更新成功' : '評論發布成功');
+    
+    dialogVisible.value = false;
     emit('success');
   } catch (error) {
-    console.error('Review submission error:', error);
-    ElMessage.error(props.review ? '更新評論失敗' : '發布評論失敗');
+    handleError(error);
+  } finally {
+    submitting.value = false;
   }
 };
 
