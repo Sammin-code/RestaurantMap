@@ -100,6 +100,7 @@
           
           <el-form-item>
             <el-button type="primary" @click="submitForm">保存</el-button>
+            <el-button type="danger" @click="handleRemoveImage" v-if="imageUrl">移除圖片</el-button>
             <el-button @click="goBack">取消</el-button>
           </el-form-item>
         </el-form>
@@ -302,8 +303,8 @@ onMounted(async () => {
 <style scoped>
 .restaurant-form-container {
   max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+  margin: 20px auto;
+  padding: 0 20px;
 }
 
 .card-header {
@@ -312,67 +313,86 @@ onMounted(async () => {
   align-items: center;
 }
 
-.loading-container, .error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.card-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #303133;
+}
+
+.loading-container,
+.error-container {
   padding: 20px;
+  text-align: center;
 }
 
 .error-container {
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
 }
 
 .form-content {
-  padding: 10px;
+  padding: 20px 0;
 }
 
 .restaurant-image-uploader {
   width: 100%;
-  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.restaurant-image-uploader :deep(.el-upload) {
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.3s;
+  transition: var(--el-transition-duration-fast);
 }
 
-.restaurant-image-uploader:hover {
-  border-color: #409EFF;
+.restaurant-image-uploader :deep(.el-upload:hover) {
+  border-color: var(--el-color-primary);
 }
 
 .restaurant-image-uploader-icon {
   font-size: 28px;
   color: #8c939d;
-  width: 178px;
-  height: 178px;
-  line-height: 178px;
+  width: 100%;
+  height: 200px;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .restaurant-image {
-  width: 178px;
-  height: 178px;
-  display: block;
+  width: 100%;
+  height: 200px;
   object-fit: cover;
-}
-
-.el-upload__tip {
-  line-height: 1.5;
-  margin-top: 10px;
-  color: #909399;
+  display: block;
 }
 
 .image-preview-container {
   position: relative;
+  width: 100%;
+  height: 200px;
 }
 
 .image-actions {
   position: absolute;
-  top: 0;
-  right: 0;
-  padding: 5px;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.el-upload__tip {
+  text-align: center;
+  color: #606266;
+  font-size: 12px;
+  margin-top: 7px;
 }
 </style> 
