@@ -265,8 +265,8 @@ const submitForm = async () => {
         size: imageFile.value.size
       });
     }
-    // 如果原本有圖片但現在沒有，添加移除標記
-    else if (route.params.id && !imageUrl.value) {
+    // 如果是更新且原本有圖片但現在沒有，添加移除標記
+    else if (isEdit.value && !imageUrl.value) {
       formData.append('removeImage', 'true');
       console.log('Adding removeImage flag');
     }
