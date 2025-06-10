@@ -99,9 +99,11 @@
           </el-form-item>
           
           <el-form-item>
-            <el-button type="primary" @click="submitForm">保存</el-button>
-            <el-button type="danger" @click="handleRemoveImage" v-if="imageUrl">移除圖片</el-button>
-            <el-button @click="goBack">取消</el-button>
+            <div class="form-buttons">
+              <el-button type="primary" @click="submitForm">保存</el-button>
+              <el-button type="danger" @click="handleRemoveImage">移除圖片</el-button>
+              <el-button @click="goBack">取消</el-button>
+            </div>
           </el-form-item>
         </el-form>
       </div>
@@ -394,5 +396,11 @@ onMounted(async () => {
   color: #606266;
   font-size: 12px;
   margin-top: 7px;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
 }
 </style> 
