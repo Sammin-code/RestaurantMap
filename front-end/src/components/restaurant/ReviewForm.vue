@@ -163,6 +163,11 @@ const handleClose = () => {
   form.imagePreview = null;
 };
 
+const handleRemoveImage = () => {
+  form.imageUrl = '';
+  form.imageFile = null;
+};
+
 const handleSubmit = async () => {
   if (!form.rating) {
     ElMessage.warning('請選擇評分');
@@ -195,15 +200,15 @@ const handleSubmit = async () => {
         size: form.imageFile.size
       });
     } 
-    // 如果原本有圖片但現在沒有，發送空文件
+    // 如果原本有圖片但現在沒有，添加移除標記
     else if (props.review?.imageUrl && !form.imageUrl) {
-      const emptyFile = new File([], 'empty.jpg', { type: 'image/jpeg' });
-      formData.append('image', emptyFile);
-      console.log('Sending empty file to remove image');
+      formData.append('removeImage', 'true');
+      console.log('Adding removeImage flag');
     }
 
     console.log('Form data review:', formData.get('review'));
     console.log('Form data has image:', formData.has('image'));
+    console.log('Form data has removeImage:', formData.has('removeImage'));
 
     submitting.value = true;
     if (isEdit.value) {

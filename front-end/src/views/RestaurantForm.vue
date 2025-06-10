@@ -74,12 +74,23 @@
               :on-change="handleImageChange"
               :show-file-list="false"
             >
-              <img 
-                v-if="imageUrl" 
-                :src="imageUrl" 
-                class="restaurant-image" 
-                @error="handleImageError"
-              />
+              <div v-if="imageUrl" class="image-preview-container">
+                <img 
+                  :src="imageUrl" 
+                  class="restaurant-image" 
+                  @error="handleImageError"
+                />
+                <div class="image-actions">
+                  <el-button 
+                    type="danger" 
+                    circle 
+                    size="small"
+                    @click.stop="handleRemoveImage"
+                  >
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                </div>
+              </div>
               <el-icon v-else class="restaurant-image-uploader-icon"><Plus /></el-icon>
               <div class="el-upload__tip">
                 點擊上傳圖片，只能上傳 jpg/png 文件，且不超過 5MB
@@ -101,7 +112,7 @@
 import { ref, reactive, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Plus } from '@element-plus/icons-vue';
+import { Plus, Delete } from '@element-plus/icons-vue';
 import { restaurantApi } from '../services/api';
 import { useUserStore } from '../stores/user';
 import { defaultRestaurantImage, handleRestaurantImageError } from '../utils/imageHelper';
@@ -176,6 +187,12 @@ const fetchRestaurantDetails = async () => {
   }
 };
 
+// 處理移除圖片
+const handleRemoveImage = () => {
+  imageUrl.value = '';
+  imageFile.value = null;
+};
+
 // 處理圖片變更
 const handleImageChange = (file) => {
   const isJPG = file.raw.type === 'image/jpeg';
@@ -200,7 +217,8 @@ const handleImageChange = (file) => {
 
 // 處理圖片錯誤
 const handleImageError = () => {
-  imageUrl.value = '';  // 載入失敗時不顯示預設圖片
+  imageUrl.value = '';
+  imageFile.value = null;
 };
 
 // 處理圖片上傳
@@ -234,13 +252,12 @@ const submitForm = async () => {
 
     // 如果有新圖片，添加新圖片
     if (imageFile.value) {
-      formData.append('image', imageFile.value);
+      formData.append('coverImage', imageFile.value);
     }
-    // 如果原本有圖片但現在沒有，發送空文件
+    // 如果原本有圖片但現在沒有，添加移除標記
     else if (imageUrl.value === '') {
-      const emptyFile = new File([], 'empty.jpg', { type: 'image/jpeg' });
-      formData.append('image', emptyFile);
-      console.log('Sending empty file to remove image');
+      formData.append('removeImage', 'true');
+      console.log('Adding removeImage flag');
     }
 
     let response;
@@ -346,5 +363,16 @@ onMounted(async () => {
   line-height: 1.5;
   margin-top: 10px;
   color: #909399;
+}
+
+.image-preview-container {
+  position: relative;
+}
+
+.image-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 5px;
 }
 </style> 
