@@ -151,7 +151,7 @@ public class RestaurantService {
     // 更新餐廳資訊
     @Transactional
     public Restaurant updateRestaurant(Long id, Restaurant newRestaurantData, String currentUserName,
-            MultipartFile coverImage) {
+                                       MultipartFile coverImage) {
         try {
             // 檢查餐廳是否存在
             Restaurant restaurant = restaurantRepository.findById(id)
@@ -169,8 +169,15 @@ public class RestaurantService {
             restaurant.setCategory(newRestaurantData.getCategory());
             restaurant.setDescription(newRestaurantData.getDescription());
 
-            // 如果提供了新圖片，則更新圖片URL
-            if (coverImage != null && !coverImage.isEmpty()) {
+            // 處理圖片
+            if (coverImage == null) {
+                // 如果沒有新圖片，刪除舊圖片
+                if (restaurant.getImageUrl() != null) {
+                    imageService.deleteImage(restaurant.getImageUrl());
+                    restaurant.setImageUrl(null);
+                }
+            } else if (!coverImage.isEmpty()) {
+                // 如果有新圖片，上傳新圖片
                 try {
                     String imageUrl = imageService.uploadImage(coverImage);
                     restaurant.setImageUrl(imageUrl);
@@ -179,19 +186,11 @@ public class RestaurantService {
                 }
             }
 
-            // 不更新以下欄位：
-            // - createdByUsername (創建者)
-            // - created_At (創建時間)
-            // - reviews (評論)
-            // - tags (標籤，應通過專門的API更新)
-
             System.out.println("餐廳成功更新：" + id);
             return restaurantRepository.save(restaurant);
         } catch (Exception e) {
-            // 記錄錯誤
             System.err.println("更新餐廳時發生錯誤: " + e.getMessage());
             e.printStackTrace();
-            // 重新拋出異常
             throw e;
         }
     }

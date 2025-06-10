@@ -325,26 +325,26 @@ public class ReviewService {
         existingReview.setContent(review.getContent());
         existingReview.setRating(review.getRating());
 
-        // 處理圖片上傳
-        if (image != null && !image.isEmpty()) {
+        // 處理圖片
+        if (image == null) {
+            // 如果沒有新圖片，刪除舊圖片
+            if (existingReview.getImageUrl() != null) {
+                imageService.deleteImage(existingReview.getImageUrl());
+                existingReview.setImageUrl(null);
+            }
+        } else if (!image.isEmpty()) {
+            // 如果有新圖片，上傳新圖片
             try {
                 String imageUrl = imageService.uploadImage(image);
                 existingReview.setImageUrl(imageUrl);
             } catch (IOException e) {
                 throw new RuntimeException("圖片上傳失敗", e);
             }
-        } else if (review.getImageUrl() != null) {
-            existingReview.setImageUrl(review.getImageUrl());
         }
 
         Review updatedReview = reviewRepository.save(existingReview);
         updateRestaurantRating(existingReview.getRestaurant().getId());
         return updatedReview;
-    }
-
-    public Review getReviewById(Long id) {
-        return reviewRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("找不到ID為 " + id + " 的評論"));
     }
 
     public Review createReview(Review review) {
