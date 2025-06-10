@@ -10,7 +10,9 @@ export const defaultRestaurantImage = DEFAULT_RESTAURANT_IMAGE;
 
 // 獲取 API 基礎 URL
 const getBaseUrl = () => {
-  return import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  // 移除末尾的 /api，避免重複
+  return baseUrl.endsWith('/api') ? baseUrl.slice(0, -4) : baseUrl;
 };
 
 /**
@@ -199,16 +201,11 @@ export const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
   
   // 使用環境變數
-  const baseUrl = import.meta.env.VITE_API_URL;
+  const baseUrl = getBaseUrl();
   
   // 如果已經是完整的 URL，提取檔名
   if (imagePath.startsWith('http')) {
     const fileName = imagePath.split('/').pop();
-    // 如果是評論圖片（包含 uploads 路徑）
-    if (imagePath.includes('/uploads/')) {
-      return `${baseUrl}/api/images/uploads/${fileName}`;
-    }
-    // 如果是餐廳圖片
     return `${baseUrl}/api/images/${fileName}`;
   }
   
@@ -219,11 +216,6 @@ export const getImageUrl = (imagePath) => {
   }
   
   // 其他情況，使用 API 路徑
-  // 如果是評論圖片（包含 uploads 路徑）
-  if (imagePath.includes('uploads/')) {
-    return `${baseUrl}/api/images/uploads/${imagePath.replace(/^\/+/, '')}`;
-  }
-  // 如果是餐廳圖片
   return `${baseUrl}/api/images/${imagePath.replace(/^\/+/, '')}`;
 };
 
@@ -232,6 +224,6 @@ export const getImageUrl = (imagePath) => {
  * @param {Event} event - 圖片錯誤事件
  */
 export function handleReviewImageError(event) {
-  console.error('Image load error:', event.target.src);
+  console.error('評論圖片載入失敗:', event.target.src);
   event.target.src = defaultRestaurantImage;
 } 
