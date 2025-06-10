@@ -8,6 +8,11 @@ import { DEFAULT_RESTAURANT_IMAGE } from '@/constants/images';
 // 默認圖片 URL (當無法載入餐廳圖片時顯示)
 export const defaultRestaurantImage = DEFAULT_RESTAURANT_IMAGE;
 
+// 獲取 API 基礎 URL
+const getBaseUrl = () => {
+  return import.meta.env.VITE_API_URL || 'http://localhost:8080';
+};
+
 /**
  * 處理圖片URL，確保它是完整的URL
  * @param {string} url - 原始圖片URL或路徑
@@ -25,11 +30,11 @@ export const processImageUrl = (url) => {
   
   // 如果是相對路徑，添加基礎 URL
   if (url.startsWith('/')) {
-    return `http://localhost:8080${url}`;
+    return `${getBaseUrl()}${url}`;
   }
   
   // 如果是圖片 ID 或文件名，使用圖片 API
-  return `http://localhost:8080/api/files/image/${url}`;
+  return `${getBaseUrl()}/api/files/image/${url}`;
 };
 
 /**
@@ -96,7 +101,7 @@ export const handleImageErrorForObject = (item, baseUrl = 'http://localhost:8080
  * @param {boolean} isReview - 是否為評論圖片
  * @returns {string} 處理後的圖片URL
  */
-export function getRestaurantImageUrl(restaurant, baseUrl = import.meta.env.VITE_API_URL, isReview = false) {
+export function getRestaurantImageUrl(restaurant, baseUrl = getBaseUrl(), isReview = false) {
   if (!restaurant) return defaultRestaurantImage;
   
   // 如果是評論圖片
