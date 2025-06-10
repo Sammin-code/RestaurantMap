@@ -111,8 +111,8 @@ export function getRestaurantImageUrl(restaurant, baseUrl = getBaseUrl(), isRevi
       return restaurant.imageUrl;
     }
     
-    // 如果是完整的 URL（包括 Cloud Storage URL），使用 API 端點
-    if (restaurant.imageUrl.startsWith('http')) {
+    // 如果是 Cloud Storage URL，提取文件名並使用 API 端點
+    if (restaurant.imageUrl.startsWith('https://storage.googleapis.com/')) {
       const fileName = restaurant.imageUrl.split('/').pop();
       return `${baseUrl}/api/images/${fileName}`;
     }
@@ -129,8 +129,8 @@ export function getRestaurantImageUrl(restaurant, baseUrl = getBaseUrl(), isRevi
   
   // 如果是餐廳圖片
   if (restaurant.imageUrl) {
-    // 如果是完整的 URL（包括 Cloud Storage URL），使用 API 端點
-    if (restaurant.imageUrl.startsWith('http')) {
+    // 如果是 Cloud Storage URL，提取文件名並使用 API 端點
+    if (restaurant.imageUrl.startsWith('https://storage.googleapis.com/')) {
       const fileName = restaurant.imageUrl.split('/').pop();
       return `${baseUrl}/api/images/${fileName}`;
     }
@@ -155,7 +155,7 @@ export function getRestaurantImageUrl(restaurant, baseUrl = getBaseUrl(), isRevi
  * @param {string} baseUrl - API基礎URL
  * @param {boolean} isReview - 是否為評論圖片
  */
-export function handleRestaurantImageError(event, restaurant, baseUrl = 'http://localhost:8080', isReview = false) {
+export function handleRestaurantImageError(event, restaurant, baseUrl = getBaseUrl(), isReview = false) {
   try {
     if (!restaurant || !restaurant.imageUrl) {
       event.target.src = isReview ? getBackupImageUrl(restaurant, true) : defaultRestaurantImage;
@@ -168,15 +168,17 @@ export function handleRestaurantImageError(event, restaurant, baseUrl = 'http://
       return;
     }
 
-    // 如果是完整的 URL（包括 Cloud Storage URL），直接使用
-    if (restaurant.imageUrl.startsWith('http')) {
-      event.target.src = restaurant.imageUrl;
+    // 如果是 Cloud Storage URL，提取文件名並使用 API 端點
+    if (restaurant.imageUrl.startsWith('https://storage.googleapis.com/')) {
+      const fileName = restaurant.imageUrl.split('/').pop();
+      event.target.src = `${baseUrl}/api/images/${fileName}`;
       return;
     }
     
-    // 如果是 Cloud Storage 路徑，直接使用
+    // 如果是 Cloud Storage 路徑，使用 API 端點
     if (restaurant.imageUrl.startsWith('gs://')) {
-      event.target.src = restaurant.imageUrl;
+      const fileName = restaurant.imageUrl.split('/').pop();
+      event.target.src = `${baseUrl}/api/images/${fileName}`;
       return;
     }
     
