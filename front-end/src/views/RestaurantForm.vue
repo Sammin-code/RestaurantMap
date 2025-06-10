@@ -76,7 +76,7 @@
             >
               <img 
                 v-if="imageUrl" 
-                :src="getRestaurantImageUrl({ imageUrl: imageUrl })" 
+                :src="imageUrl" 
                 class="restaurant-image" 
                 @error="handleImageError"
               />
@@ -104,7 +104,7 @@ import { ElMessage } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
 import { restaurantApi } from '../services/api';
 import { useUserStore } from '../stores/user';
-import { defaultRestaurantImage, handleRestaurantImageError, getRestaurantImageUrl } from '../utils/imageHelper';
+import { defaultRestaurantImage, handleRestaurantImageError } from '../utils/imageHelper';
 import { handleError } from '@/utils/errorHandler';
 
 const router = useRouter();
@@ -163,7 +163,11 @@ const fetchRestaurantDetails = async () => {
     restaurantForm.category = response.data.category;
     
     // 處理餐廳圖片
-    imageUrl.value = response.data.coverImage || '';
+    if (response.data.coverImage) {
+      imageUrl.value = response.data.coverImage;
+    } else {
+      imageUrl.value = defaultRestaurantImage;
+    }
     
   } catch (error) {
     handleError(error);
