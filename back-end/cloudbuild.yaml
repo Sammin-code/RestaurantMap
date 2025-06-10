@@ -11,7 +11,7 @@ steps:
   args:
     - 'run'
     - 'deploy'
-    - 'restaurant-map-prod-backend'
+    - 'restaurantmap'
     - '--image=asia-east1-docker.pkg.dev/$PROJECT_ID/restaurant-map/backend:latest'
     - '--region=asia-east1'
     - '--platform=managed'

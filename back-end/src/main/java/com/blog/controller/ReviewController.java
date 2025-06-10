@@ -212,6 +212,7 @@ public class ReviewController {
             @PathVariable Long reviewId,
             @RequestPart("review") String reviewJson,
             @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestPart(value = "removeImage", required = false) String removeImage,
             Authentication authentication) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -221,7 +222,10 @@ public class ReviewController {
             Review review = objectMapper.readValue(reviewJson, Review.class);
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String currentUserName = userDetails.getUsername();
-            Review updatedReview = reviewService.updateReview(reviewId, review, image, authentication);
+
+            // 如果有 removeImage 標記，傳入 null 作為圖片
+            MultipartFile imageToUse = "true".equals(removeImage) ? null : image;
+            Review updatedReview = reviewService.updateReview(reviewId, review, imageToUse, authentication);
             return ResponseEntity.ok(updatedReview);
         } catch (JsonProcessingException e) {
             return ResponseEntity.badRequest().body("Invalid review data format: " + e.getMessage());

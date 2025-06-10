@@ -48,13 +48,13 @@ public class RestaurantController {
   @PreAuthorize("hasAnyRole('REVIEWER')")
   public ResponseEntity<RestaurantResponse> createRestaurant(
       @RequestPart("restaurant") RestaurantResponse dto,
-      @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
+      @RequestPart(value = "image", required = false) MultipartFile image,
       Authentication authentication) {
     UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     String currentUserName = userDetails.getUsername();
     Long currentUserId = ((User) userDetails).getId(); // 獲取用戶ID
 
-    Restaurant created = restaurantService.createRestaurant(dto, currentUserName, coverImage);
+    Restaurant created = restaurantService.createRestaurant(dto, currentUserName, image);
     RestaurantResponse response = restaurantService.toDto(created, currentUserId); // 加入 currentUserId
 
     return ResponseEntity.ok(response);
@@ -127,10 +127,12 @@ public class RestaurantController {
   @PutMapping("/{id}")
   @PreAuthorize("hasAnyRole('REVIEWER')")
   public ResponseEntity<RestaurantResponse> updateRestaurant(
-      @PathVariable Long id,
-      @RequestPart("restaurant") RestaurantResponse dto,
-      @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
-      Authentication authentication) {
+          @PathVariable Long id,
+          @RequestPart("restaurant") RestaurantResponse dto,
+          @RequestPart(value = "image", required = false) MultipartFile image,
+          @RequestPart(value = "removeImage", required = false) String removeImage,
+          Authentication authentication) {
+
     UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     String currentUserName = userDetails.getUsername();
     Long currentUserId = ((User) userDetails).getId();
@@ -142,7 +144,9 @@ public class RestaurantController {
     newRestaurant.setCategory(dto.getCategory());
     newRestaurant.setDescription(dto.getDescription());
 
-    Restaurant updatedRestaurant = restaurantService.updateRestaurant(id, newRestaurant, currentUserName, coverImage);
+    // 如果有 removeImage 標記，傳入 null 作為圖片
+    MultipartFile imageToUse = "true".equals(removeImage) ? null : image;
+    Restaurant updatedRestaurant = restaurantService.updateRestaurant(id, newRestaurant, currentUserName, imageToUse);
     RestaurantResponse response = restaurantService.toDto(updatedRestaurant, currentUserId);
 
     return ResponseEntity.ok(response);

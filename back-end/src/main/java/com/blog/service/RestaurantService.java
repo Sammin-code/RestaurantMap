@@ -62,14 +62,14 @@ public class RestaurantService {
 
     // 新增餐廳
     @Transactional
-    public Restaurant createRestaurant(RestaurantResponse dto, String currentUserName, MultipartFile coverImage) {
+    public Restaurant createRestaurant(RestaurantResponse dto, String currentUserName, MultipartFile image) {
         User user = userRepository.findByUsername(currentUserName)
                 .orElseThrow(() -> new RuntimeException("用戶未找到"));
 
         String imageUrl = null;
-        if (coverImage != null && !coverImage.isEmpty()) {
+        if (image != null && !image.isEmpty()) {
             try {
-                imageUrl = imageService.uploadImage(coverImage);
+                imageUrl = imageService.uploadImage(image);
             } catch (IOException e) {
                 throw new RuntimeException("圖片上傳失敗", e);
             }
@@ -151,7 +151,7 @@ public class RestaurantService {
     // 更新餐廳資訊
     @Transactional
     public Restaurant updateRestaurant(Long id, Restaurant newRestaurantData, String currentUserName,
-                                       MultipartFile coverImage) {
+                                       MultipartFile image) {
         try {
             // 檢查餐廳是否存在
             Restaurant restaurant = restaurantRepository.findById(id)
@@ -170,16 +170,16 @@ public class RestaurantService {
             restaurant.setDescription(newRestaurantData.getDescription());
 
             // 處理圖片
-            if (coverImage == null) {
+            if (image == null) {
                 // 如果沒有新圖片，刪除舊圖片
                 if (restaurant.getImageUrl() != null) {
                     imageService.deleteImage(restaurant.getImageUrl());
                     restaurant.setImageUrl(null);
                 }
-            } else if (!coverImage.isEmpty()) {
+            } else if (!image.isEmpty()) {
                 // 如果有新圖片，上傳新圖片
                 try {
-                    String imageUrl = imageService.uploadImage(coverImage);
+                    String imageUrl = imageService.uploadImage(image);
                     restaurant.setImageUrl(imageUrl);
                 } catch (IOException e) {
                     throw new ValidationException("圖片上傳失敗");
