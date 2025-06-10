@@ -7,6 +7,7 @@ import com.blog.service.UserRestaurantService;
 import com.blog.service.RestaurantService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -44,7 +45,7 @@ public class RestaurantController {
   private static final Logger log = LoggerFactory.getLogger(RestaurantController.class);
 
   // 新增餐廳
-  @PostMapping
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasAnyRole('REVIEWER')")
   public ResponseEntity<RestaurantResponse> createRestaurant(
       @RequestPart("restaurant") RestaurantResponse dto,
@@ -124,7 +125,7 @@ public class RestaurantController {
   }
 
   // 更新餐廳資訊
-  @PutMapping("/{id}")
+  @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasAnyRole('REVIEWER')")
   public ResponseEntity<RestaurantResponse> updateRestaurant(
           @PathVariable Long id,
