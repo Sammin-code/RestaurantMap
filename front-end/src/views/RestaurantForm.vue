@@ -168,6 +168,7 @@ const fetchRestaurantDetails = async () => {
   try {
     loading.value = true;
     const response = await restaurantApi.getRestaurantById(route.params.id);
+    console.log('Restaurant details response:', response.data);
     
     // 處理返回的餐廳數據
     restaurantForm.name = response.data.name;
@@ -177,9 +178,9 @@ const fetchRestaurantDetails = async () => {
     restaurantForm.category = response.data.category;
     
     // 處理餐廳圖片
-    if (response.data.imageUrl) {
-      imageUrl.value = response.data.imageUrl;
-      console.log('Setting image URL:', response.data.imageUrl);
+    if (response.data.image) {
+      imageUrl.value = response.data.image;
+      console.log('Setting image URL:', response.data.image);
     } else {
       imageUrl.value = '';  // 不顯示預設圖片
       console.log('No image URL found');
