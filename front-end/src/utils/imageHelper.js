@@ -96,7 +96,7 @@ export const handleImageErrorForObject = (item, baseUrl = 'http://localhost:8080
  * @param {boolean} isReview - 是否為評論圖片
  * @returns {string} 處理後的圖片URL
  */
-export function getRestaurantImageUrl(restaurant, baseUrl = 'https://restaurantmap-255668913932.asia-east1.run.app', isReview = false) {
+export function getRestaurantImageUrl(restaurant, baseUrl = import.meta.env.VITE_API_URL, isReview = false) {
   if (!restaurant) return defaultRestaurantImage;
   
   // 如果是評論圖片
@@ -191,8 +191,8 @@ export function handleRestaurantImageError(event, restaurant, baseUrl = 'http://
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
   
-  // 使用與餐廳圖片相同的基礎 URL
-  const baseUrl = 'https://restaurantmap-255668913932.asia-east1.run.app';
+  // 使用環境變數
+  const baseUrl = import.meta.env.VITE_API_URL;
   
   // 如果已經是完整的 URL，提取檔名
   if (imagePath.startsWith('http')) {
