@@ -1,13 +1,14 @@
+logsBucket: "gs://restaurantmap-logs-bucket"
 steps:
   # 構建 Docker 映像
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', 
-      '-t', 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/restaurantmap/restaurantmap:latest',
+      '-t', 'asia-east1-docker.pkg.dev/$PROJECT_ID/restaurant-map/frontend:latest',
       '-f', 'Dockerfile', '.']
 
   # 推送映像到 Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/restaurantmap/restaurantmap:latest']
+    args: ['push', 'asia-east1-docker.pkg.dev/$PROJECT_ID/restaurant-map/frontend:latest']
 
   # 部署到 Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -16,7 +17,7 @@ steps:
       - 'run'
       - 'deploy'
       - 'restaurant-map-frontend'
-      - '--image=asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/restaurantmap/restaurantmap:latest'
+      - '--image=asia-east1-docker.pkg.dev/$PROJECT_ID/restaurant-map/frontend:latest'
       - '--region=asia-east1'
       - '--platform=managed'
       - '--allow-unauthenticated'
@@ -28,4 +29,18 @@ steps:
       - '--set-env-vars=VITE_API_URL=https://restaurantmap-255668913932.asia-east1.run.app/api'
 
 images:
-  - 'asia-east1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/restaurantmap/restaurantmap:latest' 
+  - 'asia-east1-docker.pkg.dev/$PROJECT_ID/restaurant-map/frontend:latest'
+
+# 觸發條件
+triggers:
+  - name: "auto-deploy"
+    description: "自動部署到 Cloud Run"
+    filename: "cloudbuild.yaml"
+    includedFiles:
+      - "**/*"
+    substitutions:
+      _BRANCH: "main"
+    tags:
+      - "deploy"
+    options:
+      logging: CLOUD_LOGGING_ONLY 
