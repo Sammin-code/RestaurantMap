@@ -1,5 +1,8 @@
 FROM eclipse-temurin:17-jdk-alpine
 
+LABEL maintainer="RestaurantMap Backend"
+LABEL description="RestaurantMap Backend Service"
+
 WORKDIR /app
 
 COPY pom.xml .
