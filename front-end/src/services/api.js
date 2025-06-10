@@ -313,14 +313,18 @@ const restaurantApi = {
   },
   
   // 更新餐廳
-  updateRestaurant: (id, restaurantData) => {
+  updateRestaurant: (id, formData) => {
     const token = localStorage.getItem('token');
     if (!token) {
       return Promise.reject(new Error('請先登入'));
     }
-    const tokenValue = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-    const headers = { 'Authorization': tokenValue };
-    return api.put(`/restaurants/${id}`, restaurantData, { headers });
+    
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data',
+      'Accept': 'application/json'
+    };
+    return api.put(`/restaurants/${id}`, formData, { headers });
   },
   
   // 刪除餐廳
