@@ -177,10 +177,12 @@ const fetchRestaurantDetails = async () => {
     restaurantForm.category = response.data.category;
     
     // 處理餐廳圖片
-    if (response.data.coverImage) {
-      imageUrl.value = response.data.coverImage;
+    if (response.data.imageUrl) {
+      imageUrl.value = response.data.imageUrl;
+      console.log('Setting image URL:', response.data.imageUrl);
     } else {
       imageUrl.value = '';  // 不顯示預設圖片
+      console.log('No image URL found');
     }
     
   } catch (error) {
@@ -255,21 +257,29 @@ const submitForm = async () => {
 
     // 如果有新圖片，添加新圖片
     if (imageFile.value) {
-      formData.append('coverImage', imageFile.value);
+      formData.append('image', imageFile.value);
+      console.log('Adding new image:', {
+        name: imageFile.value.name,
+        type: imageFile.value.type,
+        size: imageFile.value.size
+      });
     }
     // 如果原本有圖片但現在沒有，添加移除標記
-    else if (imageUrl.value === '') {
+    else if (route.params.id && !imageUrl.value) {
       formData.append('removeImage', 'true');
       console.log('Adding removeImage flag');
     }
 
-    let response;
+    console.log('Form data restaurant:', formData.get('restaurant'));
+    console.log('Form data has image:', formData.has('image'));
+    console.log('Form data has removeImage:', formData.has('removeImage'));
+
     if (isEdit.value) {
-      response = await restaurantApi.updateRestaurant(restaurantId.value, formData);
-      ElMessage.success('餐廳已更新');
+      await restaurantApi.updateRestaurant(restaurantId.value, formData);
+      ElMessage.success('餐廳更新成功');
     } else {
-      response = await restaurantApi.createRestaurant(formData);
-      ElMessage.success('餐廳已創建');
+      await restaurantApi.create(formData);
+      ElMessage.success('餐廳創建成功');
     }
     
     router.push('/restaurants');

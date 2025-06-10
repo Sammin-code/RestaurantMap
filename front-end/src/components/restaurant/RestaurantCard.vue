@@ -19,7 +19,7 @@
         :preview-src-list="[getRestaurantImageUrl(restaurant)]"
         fit="cover"
         class="restaurant-img"
-        @error="(e) => handleRestaurantImageError(e, restaurant)"
+        @error="(e) => handleImageError(e, restaurant)"
       >
         <template #placeholder>
           <div class="image-loading">
@@ -213,6 +213,12 @@ const handleDelete = () => {
 // 處理更新
 const handleUpdate = () => {
   emit('update', props.restaurant.id);
+};
+
+// 處理圖片錯誤
+const handleImageError = (event, restaurant) => {
+  console.log('圖片載入失敗:', restaurant.imageUrl);
+  handleRestaurantImageError(event, restaurant);
 };
 </script>
 

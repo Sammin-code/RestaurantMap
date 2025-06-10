@@ -277,7 +277,12 @@ const restaurantApi = {
   },
   
   // 獲取餐廳詳情
-  getRestaurantById: (id) => api.get(`/restaurants/${id}`),
+  getRestaurantById: (id) => {
+    return api.get(`/restaurants/${id}`).then(response => {
+      console.log('Restaurant details response:', response.data);
+      return response;
+    });
+  },
   
   // 檢查是否已收藏
   checkFavorite: async (restaurantId) => {
