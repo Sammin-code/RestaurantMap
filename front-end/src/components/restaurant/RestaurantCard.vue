@@ -93,7 +93,7 @@ const props = defineProps({
   },
   defaultImage: {
     type: String,
-    default: ''
+    default: 'https://example.com/default-image.jpg'
   },
   showDeleteButton: {
     type: Boolean,

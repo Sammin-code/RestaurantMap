@@ -10,6 +10,10 @@
     >
       <div class="upload-container">
         <img v-if="imageUrl" :src="imageUrl" class="preview-image" />
+        <div v-else-if="showDefaultImage" class="upload-placeholder">
+          <el-icon class="upload-icon"><Plus /></el-icon>
+          <div class="upload-text">{{ placeholderText }}</div>
+        </div>
         <div v-else class="upload-placeholder">
           <el-icon class="upload-icon"><Plus /></el-icon>
           <div class="upload-text">{{ placeholderText }}</div>
@@ -54,6 +58,10 @@ const props = defineProps({
   maxSize: {
     type: Number,
     default: 2 // MB
+  },
+  showDefaultImage: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -61,6 +69,7 @@ const emit = defineEmits(['update:modelValue', 'change']);
 
 const imageUrl = ref(props.modelValue);
 const imageFile = ref(null);
+const defaultImage = 'https://example.com/default-image.jpg'; // 設置預設圖的 URL
 
 watch(() => props.modelValue, (newValue) => {
   imageUrl.value = newValue;
