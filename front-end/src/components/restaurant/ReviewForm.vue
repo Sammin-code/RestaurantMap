@@ -64,6 +64,7 @@ import ImageUploader from '@/components/common/ImageUploader.vue';
 import { handleError } from '@/utils/errorHandler';
 import { useRouter } from 'vue-router';
 import { reviewApi } from '@/services/api';
+import { getRestaurantImageUrl } from '@/utils/imageHelper';
 
 const props = defineProps({
   visible: {
@@ -116,20 +117,13 @@ watch(() => props.review, (newReview) => {
   if (newReview) {
     form.rating = newReview.rating;
     form.content = newReview.content;
-    form.imageUrl = newReview.imageUrl || '';  // 確保 imageUrl 不為 undefined
-    form.imageFile = null;  // 重置 imageFile
-    // 如果有現有圖片，設置預覽
-    if (newReview.imageUrl) {
-      form.imagePreview = newReview.imageUrl;
-    } else {
-      form.imagePreview = null;
-    }
+    form.imageUrl = getRestaurantImageUrl(newReview);
+    form.imageFile = null;
   } else {
     form.rating = 5;
     form.content = '';
     form.imageUrl = '';
     form.imageFile = null;
-    form.imagePreview = null;
   }
 }, { immediate: true });
 
@@ -161,11 +155,6 @@ const handleClose = () => {
   form.imageUrl = '';
   form.imageFile = null;
   form.imagePreview = null;
-};
-
-const handleRemoveImage = () => {
-  form.imageUrl = '';
-  form.imageFile = null;
 };
 
 const handleSubmit = async () => {
@@ -241,5 +230,31 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.image-preview-container {
+  position: relative;
+}
+
+.review-image {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.remove-image-button {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 </style> 

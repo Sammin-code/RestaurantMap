@@ -67,34 +67,12 @@
           </el-form-item>
           
           <el-form-item label="封面圖片">
-            <el-upload
-              class="restaurant-image-uploader"
-              action="#"
-              :auto-upload="false"
-              :on-change="handleImageChange"
-              :show-file-list="false"
-            >
-              <div v-if="imageUrl" class="image-preview-container">
-                <img 
-                  :src="imageUrl" 
-                  class="restaurant-image" 
-                  @error="handleImageError"
-                />
-                <el-button
-                  v-if="imageUrl"
-                  type="danger"
-                  class="remove-image-button"
-                  @click.stop="handleRemoveImage"
-                >
-                  <el-icon><Delete /></el-icon>
-                  移除圖片
-                </el-button>
-              </div>
-              <el-icon v-else class="restaurant-image-uploader-icon"><Plus /></el-icon>
-              <div class="el-upload__tip">
-                點擊上傳圖片，只能上傳 jpg/png 文件，且不超過 5MB
-              </div>
-            </el-upload>
+            <ImageUploader
+              v-model="imageUrl"
+              placeholder-text="點擊上傳封面圖片"
+              tip="支援 jpg、png 格式，大小不超過 5MB"
+              @change="handleImageChange"
+            />
           </el-form-item>
           
           <el-form-item>
@@ -118,6 +96,7 @@ import { restaurantApi } from '../services/api';
 import { useUserStore } from '../stores/user';
 import { defaultRestaurantImage, handleRestaurantImageError, getRestaurantImageUrl } from '../utils/imageHelper';
 import { handleError } from '@/utils/errorHandler';
+import ImageUploader from '@/components/common/ImageUploader.vue';
 
 const router = useRouter();
 const route = useRoute();
