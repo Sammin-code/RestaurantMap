@@ -178,10 +178,14 @@ const handleRemoveImage = () => {
 
 // 處理圖片變更
 const handleImageChange = (file) => {
-  const isJPG = file.raw.type === 'image/jpeg';
-  const isPNG = file.raw.type === 'image/png';
-  const isGIF = file.raw.type === 'image/gif';
-  const isLt5M = file.raw.size / 1024 / 1024 < 5;
+  if (!file) {
+    imageFile.value = null;
+    return;
+  }
+  const isJPG = file.raw?.type === 'image/jpeg';
+  const isPNG = file.raw?.type === 'image/png';
+  const isGIF = file.raw?.type === 'image/gif';
+  const isLt5M = file.raw?.size / 1024 / 1024 < 5;
 
   if (!isJPG && !isPNG && !isGIF) {
     ElMessage.error('只能上傳 JPG、PNG 或 GIF 格式的圖片！');
@@ -193,8 +197,6 @@ const handleImageChange = (file) => {
   }
 
   imageFile.value = file.raw;
-  imageUrl.value = URL.createObjectURL(file.raw);
-  restaurantForm.removeImage = false;
   return false;
 };
 
