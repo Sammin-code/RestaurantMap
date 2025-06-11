@@ -80,16 +80,6 @@
                   class="restaurant-image" 
                   @error="handleImageError"
                 />
-                <div class="image-actions">
-                  <el-button 
-                    type="danger" 
-                    circle 
-                    size="small"
-                    @click.stop="handleRemoveImage"
-                  >
-                    <el-icon><Delete /></el-icon>
-                  </el-button>
-                </div>
               </div>
               <el-icon v-else class="restaurant-image-uploader-icon"><Plus /></el-icon>
               <div class="el-upload__tip">
@@ -101,7 +91,6 @@
           <el-form-item>
             <div class="form-buttons">
               <el-button type="primary" @click="submitForm">保存</el-button>
-              <el-button type="danger" @click="handleRemoveImage">移除圖片</el-button>
               <el-button @click="goBack">取消</el-button>
             </div>
           </el-form-item>
