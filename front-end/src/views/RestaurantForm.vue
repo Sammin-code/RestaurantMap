@@ -237,27 +237,30 @@ const submitForm = async () => {
     await formRef.value.validate();
     
     const formData = new FormData();
-    formData.append('restaurant', JSON.stringify({
+    
+    // 添加餐廳數據
+    const restaurantData = {
       name: restaurantForm.name,
-      description: restaurantForm.description,
       address: restaurantForm.address,
       phone: restaurantForm.phone,
-      category: restaurantForm.category
-    }));
-
-    // 如果有新圖片，添加新圖片
+      description: restaurantForm.description,
+      category: restaurantForm.category,
+      priceRange: restaurantForm.priceRange,
+      openingHours: restaurantForm.openingHours,
+      latitude: restaurantForm.latitude,
+      longitude: restaurantForm.longitude
+    };
+    
+    formData.append('restaurant', JSON.stringify(restaurantData));
+    
+    // 如果有新圖片，添加圖片
     if (imageFile.value) {
       formData.append('image', imageFile.value);
-      console.log('Adding new image:', {
-        name: imageFile.value.name,
-        type: imageFile.value.type,
-        size: imageFile.value.size
-      });
     }
-    // 如果是更新且原本有圖片但現在沒有，添加移除標記
-    else if (isEdit.value && !imageUrl.value) {
+    
+    // 如果要刪除圖片，添加標記
+    if (isEdit.value && !imageUrl.value) {
       formData.append('removeImage', 'true');
-      console.log('Adding removeImage flag');
     }
 
     console.log('Form data restaurant:', formData.get('restaurant'));
