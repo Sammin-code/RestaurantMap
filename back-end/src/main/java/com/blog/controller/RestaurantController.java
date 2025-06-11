@@ -49,16 +49,22 @@ public class RestaurantController {
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasAnyRole('REVIEWER')")
   public ResponseEntity<RestaurantResponse> createRestaurant(
-      @RequestPart("restaurant") RestaurantResponse dto,
-      @RequestPart(value = "image", required = false) MultipartFile image,
-      Authentication authentication) {
+          @RequestPart("restaurant") String restaurantJson,
+          @RequestPart(value = "image", required = false) MultipartFile image,
+          Authentication authentication) throws IOException {
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    RestaurantResponse dto = objectMapper.readValue(restaurantJson, RestaurantResponse.class);
+
     UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     String currentUserName = userDetails.getUsername();
-    Long currentUserId = ((User) userDetails).getId(); // 獲取用戶ID
+    Long currentUserId = ((User) userDetails).getId();
 
     Restaurant created = restaurantService.createRestaurant(dto, currentUserName, image);
-    RestaurantResponse response = restaurantService.toDto(created, currentUserId); // 加入 currentUserId
+    RestaurantResponse response = restaurantService.toDto(created, currentUserId);
 
+    System.out.println("Controller 回傳 DTO imageUrl: " + response.getImageUrl());
+    
     return ResponseEntity.ok(response);
   }
 
