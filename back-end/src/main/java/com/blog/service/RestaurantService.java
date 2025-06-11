@@ -339,6 +339,7 @@ public class RestaurantService {
         dto.setCategory(restaurant.getCategory());
         dto.setDescription(restaurant.getDescription());
         dto.setCreatedByUsername(restaurant.getCreatedByUsername());
+        System.out.println("toDto: restaurant.getImageUrl() = " + restaurant.getImageUrl());
         dto.setImageUrl(restaurant.getImageUrl());
 
         // 計算平均評分
