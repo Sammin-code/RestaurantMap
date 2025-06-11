@@ -70,9 +70,13 @@ public class RestaurantService {
         if (image != null && !image.isEmpty()) {
             try {
                 imageUrl = imageService.uploadImage(image);
+                System.out.println("Service imageService.uploadImage(image): " + imageUrl);
             } catch (IOException e) {
+                System.out.println("Service imageService.uploadImage(image) 發生錯誤: " + e.getMessage());
                 throw new RuntimeException("圖片上傳失敗", e);
             }
+        } else {
+            System.out.println("Service imageService.uploadImage(image): no image");
         }
 
         Restaurant restaurant = new Restaurant();
@@ -84,6 +88,10 @@ public class RestaurantService {
         restaurant.setCreatedByUsername(currentUserName);
         restaurant.setCreatedAt(LocalDateTime.now());
         restaurant.setImageUrl(imageUrl);
+
+        System.out.println("Service restaurant.getImageUrl(): " + restaurant.getImageUrl());
+        System.out.println("Service image != null: " + (image != null));
+        System.out.println("Service image.isEmpty(): " + (image != null ? image.isEmpty() : "image is null"));
 
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
 
@@ -356,8 +364,9 @@ public class RestaurantService {
         dto.setReviews(restaurant.getReviews().stream()
                 .map(review -> toReviewDTO(review, currentUserId))
                 .collect(Collectors.toList()));
-
+        System.out.println("toDto 結尾 DTO imageUrl: " + dto.getImageUrl());
         return dto;
+
     }
 
     // 轉換列表的 Restaurant 物件為 DTO 列表
