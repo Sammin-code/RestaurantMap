@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -129,10 +130,13 @@ public class RestaurantController {
   @PreAuthorize("hasAnyRole('REVIEWER')")
   public ResponseEntity<RestaurantResponse> updateRestaurant(
           @PathVariable Long id,
-          @RequestPart("restaurant") RestaurantResponse dto,
+          @RequestPart("restaurant") String restaurantJson,
           @RequestPart(value = "image", required = false) MultipartFile image,
           @RequestPart(value = "removeImage", required = false) String removeImage,
-          Authentication authentication) {
+          Authentication authentication) throws IOException {
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    RestaurantResponse dto = objectMapper.readValue(restaurantJson, RestaurantResponse.class);
 
     UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     String currentUserName = userDetails.getUsername();
