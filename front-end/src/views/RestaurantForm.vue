@@ -179,14 +179,9 @@ const fetchRestaurantDetails = async () => {
     restaurantForm.category = response.data.category;
     restaurantForm.removeImage = false;
     
-    // 正確處理餐廳圖片（用 imageUrl）
-    if (response.data.imageUrl) {
-      imageUrl.value = response.data.imageUrl;
-      console.log('Setting image URL:', response.data.imageUrl);
-    } else {
-      imageUrl.value = '';
-      console.log('No image URL found');
-    }
+    // 圖片顯示邏輯與卡片一致
+    imageUrl.value = getRestaurantImageUrl(response.data);
+    console.log('Setting image URL:', imageUrl.value);
     
   } catch (error) {
     handleError(error);
