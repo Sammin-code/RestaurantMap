@@ -29,6 +29,8 @@ public class RestaurantResponse {
     private List<ReviewDTO> reviews;
     private int reviewCount;
 
+    public RestaurantResponse() {}
+
     public String getName() {
         return name;
     }
