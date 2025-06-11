@@ -39,6 +39,7 @@
           placeholder-text="點擊上傳評論圖片"
           tip="支援 jpg、png 格式，大小不超過 5MB"
           @change="handleImageChange"
+          :show-default-image="false"
         />
       </el-form-item>
     </el-form>
