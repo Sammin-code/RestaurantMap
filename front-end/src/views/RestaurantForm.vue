@@ -69,6 +69,7 @@
           <el-form-item label="封面圖片">
             <ImageUploader
               v-model="imageUrl"
+              :show-default-image="false"
               placeholder-text="點擊上傳封面圖片"
               tip="支援 jpg、png 格式，大小不超過 5MB"
               @change="handleImageChange"
@@ -182,21 +183,26 @@ const handleImageChange = (file) => {
     imageFile.value = null;
     return;
   }
-  const isJPG = file.raw?.type === 'image/jpeg';
-  const isPNG = file.raw?.type === 'image/png';
-  const isGIF = file.raw?.type === 'image/gif';
-  const isLt5M = file.raw?.size / 1024 / 1024 < 5;
+  const realFile = file.raw ? file.raw : file;
+  console.log('realFile:', realFile, 'type:', realFile.type);
 
-  if (!isJPG && !isPNG && !isGIF) {
+  // 允許 type 為空時也能通過，或直接用副檔名判斷
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+  const isAllowedType = allowedTypes.includes(realFile.type);
+  const ext = realFile.name ? realFile.name.split('.').pop().toLowerCase() : '';
+  const isAllowedExt = ['jpg', 'jpeg', 'png', 'gif'].includes(ext);
+
+  if (!isAllowedType && !isAllowedExt) {
     ElMessage.error('只能上傳 JPG、PNG 或 GIF 格式的圖片！');
     return false;
   }
+  const isLt5M = realFile.size / 1024 / 1024 < 5;
   if (!isLt5M) {
     ElMessage.error('圖片大小不能超過 5MB！');
     return false;
   }
 
-  imageFile.value = file.raw;
+  imageFile.value = realFile;
   return false;
 };
 
