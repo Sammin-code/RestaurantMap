@@ -489,7 +489,7 @@ const handleAddRestaurant = async () => {
     // 添加圖片
     if (addRestaurantForm.coverImage && addRestaurantForm.coverImage.file) {
       console.log('Adding image to FormData:', addRestaurantForm.coverImage.file);
-      formData.append('coverImage', addRestaurantForm.coverImage.file, addRestaurantForm.coverImage.file.name);
+      formData.append('image', addRestaurantForm.coverImage.file, addRestaurantForm.coverImage.file.name);
     }
     
     // 印出 formData 內容
