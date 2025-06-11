@@ -64,7 +64,7 @@ public class RestaurantController {
     RestaurantResponse response = restaurantService.toDto(created, currentUserId);
 
     System.out.println("Controller 回傳 DTO imageUrl: " + response.getImageUrl());
-    
+    System.out.println("Controller created.getImageUrl(): " + created.getImageUrl());
     return ResponseEntity.ok(response);
   }
 
