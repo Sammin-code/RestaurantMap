@@ -244,9 +244,11 @@ const submitForm = async () => {
     }
     
     if (isEdit.value) {
-      await restaurantApi.updateRestaurant(restaurantId.value, formData);
+      const response = await restaurantApi.updateRestaurant(restaurantId.value, formData);
+      console.log('更新餐廳回傳：', response.data);
     } else {
-      await restaurantApi.createRestaurant(formData);
+      const response = await restaurantApi.createRestaurant(formData);
+      console.log('新增餐廳回傳：', response.data);
     }
     
     ElMessage.success('保存成功');
