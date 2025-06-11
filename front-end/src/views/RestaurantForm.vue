@@ -81,6 +81,7 @@
                   @error="handleImageError"
                 />
                 <el-button
+                  v-if="imageUrl"
                   type="danger"
                   class="remove-image-button"
                   @click.stop="handleRemoveImage"
@@ -178,10 +179,10 @@ const fetchRestaurantDetails = async () => {
     restaurantForm.category = response.data.category;
     restaurantForm.removeImage = false;
     
-    // 處理餐廳圖片
-    if (response.data.image) {
-      imageUrl.value = response.data.image;
-      console.log('Setting image URL:', response.data.image);
+    // 正確處理餐廳圖片（用 imageUrl）
+    if (response.data.imageUrl) {
+      imageUrl.value = response.data.imageUrl;
+      console.log('Setting image URL:', response.data.imageUrl);
     } else {
       imageUrl.value = '';
       console.log('No image URL found');
