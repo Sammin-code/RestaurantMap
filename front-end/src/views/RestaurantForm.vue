@@ -80,6 +80,14 @@
                   class="restaurant-image" 
                   @error="handleImageError"
                 />
+                <el-button
+                  type="danger"
+                  class="remove-image-button"
+                  @click.stop="handleRemoveImage"
+                >
+                  <el-icon><Delete /></el-icon>
+                  移除圖片
+                </el-button>
               </div>
               <el-icon v-else class="restaurant-image-uploader-icon"><Plus /></el-icon>
               <div class="el-upload__tip">
@@ -107,7 +115,7 @@ import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { restaurantApi } from '../services/api';
 import { useUserStore } from '../stores/user';
-import { defaultRestaurantImage, handleRestaurantImageError } from '../utils/imageHelper';
+import { defaultRestaurantImage, handleRestaurantImageError, getRestaurantImageUrl } from '../utils/imageHelper';
 import { handleError } from '@/utils/errorHandler';
 
 const router = useRouter();
@@ -132,6 +140,7 @@ const restaurantForm = reactive({
   phone: '',
   category: '',
   description: '',
+  removeImage: false
 });
 
 // 表單驗證規則
@@ -154,6 +163,8 @@ const rules = {
 
 // 獲取餐廳數據（用於編輯）
 const fetchRestaurantDetails = async () => {
+  if (!isEdit.value) return;
+  
   try {
     loading.value = true;
     const response = await restaurantApi.getRestaurantById(route.params.id);
@@ -165,13 +176,14 @@ const fetchRestaurantDetails = async () => {
     restaurantForm.phone = response.data.phone;
     restaurantForm.description = response.data.description;
     restaurantForm.category = response.data.category;
+    restaurantForm.removeImage = false;
     
     // 處理餐廳圖片
     if (response.data.image) {
       imageUrl.value = response.data.image;
       console.log('Setting image URL:', response.data.image);
     } else {
-      imageUrl.value = '';  // 不顯示預設圖片
+      imageUrl.value = '';
       console.log('No image URL found');
     }
     
@@ -186,6 +198,7 @@ const fetchRestaurantDetails = async () => {
 const handleRemoveImage = () => {
   imageUrl.value = '';
   imageFile.value = null;
+  restaurantForm.removeImage = true;
 };
 
 // 處理圖片變更
@@ -199,21 +212,21 @@ const handleImageChange = (file) => {
     ElMessage.error('只能上傳 JPG、PNG 或 GIF 格式的圖片！');
     return false;
   }
-  
   if (!isLt5M) {
     ElMessage.error('圖片大小不能超過 5MB！');
     return false;
   }
-  
-  // 預覽圖片
-  imageUrl.value = URL.createObjectURL(file.raw);
+
   imageFile.value = file.raw;
+  imageUrl.value = URL.createObjectURL(file.raw);
+  restaurantForm.removeImage = false;
+  return false;
 };
 
 // 處理圖片錯誤
-const handleImageError = () => {
-  imageUrl.value = '';
-  imageFile.value = null;
+const handleImageError = (e) => {
+  console.error('Image load error:', e);
+  imageUrl.value = defaultRestaurantImage;
 };
 
 // 處理圖片上傳
@@ -237,47 +250,27 @@ const submitForm = async () => {
     await formRef.value.validate();
     
     const formData = new FormData();
+    formData.append('restaurant', JSON.stringify(restaurantForm));
     
-    // 添加餐廳數據
-    const restaurantData = {
-      name: restaurantForm.name,
-      address: restaurantForm.address,
-      phone: restaurantForm.phone,
-      description: restaurantForm.description,
-      category: restaurantForm.category,
-      priceRange: restaurantForm.priceRange,
-      openingHours: restaurantForm.openingHours,
-      latitude: restaurantForm.latitude,
-      longitude: restaurantForm.longitude
-    };
-    
-    formData.append('restaurant', JSON.stringify(restaurantData));
-    
-    // 如果有新圖片，添加圖片
     if (imageFile.value) {
       formData.append('image', imageFile.value);
     }
     
-    // 如果要刪除圖片，添加標記
-    if (isEdit.value && !imageUrl.value) {
+    if (restaurantForm.removeImage) {
       formData.append('removeImage', 'true');
     }
-
-    console.log('Form data restaurant:', formData.get('restaurant'));
-    console.log('Form data has image:', formData.has('image'));
-    console.log('Form data has removeImage:', formData.has('removeImage'));
-
+    
     if (isEdit.value) {
       await restaurantApi.updateRestaurant(restaurantId.value, formData);
-      ElMessage.success('餐廳更新成功');
     } else {
-      await restaurantApi.create(formData);
-      ElMessage.success('餐廳創建成功');
+      await restaurantApi.createRestaurant(formData);
     }
     
+    ElMessage.success('保存成功');
     router.push('/restaurants');
   } catch (error) {
-    handleError(error);
+    console.error('表單提交失敗:', error);
+    ElMessage.error('保存失敗，請稍後再試');
   }
 };
 
@@ -292,17 +285,11 @@ const viewRestaurant = (id) => {
 };
 
 // 頁面加載時獲取餐廳數據（如果是編輯模式）
-onMounted(async () => {
-  if (!userStore.checkLogin()) return
-  
-  try {
-    if (route.params.id) {
-      await fetchRestaurantDetails()
-    }
-  } catch (error) {
-    handleError(error, '獲取餐廳資料失敗')
+onMounted(() => {
+  if (isEdit.value) {
+    fetchRestaurantDetails();
   }
-})
+});
 </script>
 
 <style scoped>
