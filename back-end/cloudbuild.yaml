@@ -1,10 +1,11 @@
 logsBucket: "gs://restaurantmap-logs-bucket"
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'asia-east1-docker.pkg.dev/$PROJECT_ID/restaurant-map/backend:latest', '.']
+  dir: 'back-end'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/restaurant-map', '.']
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'asia-east1-docker.pkg.dev/$PROJECT_ID/restaurant-map/backend:latest']
+  args: ['push', 'gcr.io/$PROJECT_ID/restaurant-map']
 
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
@@ -12,9 +13,9 @@ steps:
     - 'run'
     - 'deploy'
     - 'restaurantmap'
-    - '--image=asia-east1-docker.pkg.dev/$PROJECT_ID/restaurant-map/backend:latest'
+    - '--image=gcr.io/$PROJECT_ID/restaurant-map'
     - '--region=asia-east1'
     - '--platform=managed'
 
 images:
-- 'asia-east1-docker.pkg.dev/$PROJECT_ID/restaurant-map/backend:latest' 
+- 'gcr.io/$PROJECT_ID/restaurant-map' 

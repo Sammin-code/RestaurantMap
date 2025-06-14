@@ -76,11 +76,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return true;
         }
 
-        // 如果是 /uploads/ 路徑的請求，直接放行
-        if (path.startsWith("/uploads/")) {
-            return true;
-        }
-
         // 登入和註冊請求不需要認證
         if (path.equals("/api/users/login") || path.equals("/api/users/register")) {
             return true;

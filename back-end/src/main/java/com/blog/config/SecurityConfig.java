@@ -70,7 +70,6 @@ public class SecurityConfig {
                             .requestMatchers("/api/auth/**", "/api/users/login", "/api/users/register").permitAll()
                             .requestMatchers(HttpMethod.GET, "/api/restaurants/**").permitAll()
                             .requestMatchers(HttpMethod.GET, "/api/reviews/restaurant/**").permitAll()
-                            .requestMatchers("/uploads/**", "/api/uploads/**").permitAll()
                             .requestMatchers("/api/debug/**").permitAll()
                             .requestMatchers("/api/images/**").permitAll()
 
