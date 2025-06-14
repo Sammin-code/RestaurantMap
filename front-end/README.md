@@ -1,5 +1,50 @@
-# Vue 3 + Vite
+# Restaurant Map
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+一個基於 Vue 3 和 Spring Boot 的餐廳地圖應用，讓用戶可以探索、分享和評論餐廳。
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## 技術棧
+### 前端
+- Vue 3
+- Element Plus
+- Axios
+- Vue Router
+- Pinia
+- Vite
+
+### 後端
+- Spring Boot
+- Spring Security
+- Spring Data JPA
+- MySQL
+- JWT
+
+## 專案結構
+```
+restaurant-map/
+├── front-end/          # Vue 3 前端專案
+└── back-end/           # Spring Boot 後端專案
+```
+
+## 快速開始
+
+### 前端
+```bash
+cd front-end
+npm install
+npm run dev
+```
+
+### 後端
+```bash
+cd back-end
+mvn install
+mvn spring-boot:run
+```
+
+## 詳細文檔
+- [前端文檔](./front-end/README.md)
+- [後端文檔](./back-end/README.md)
+
+## 開發團隊
+- Sammy Hu
+
