@@ -29,10 +29,6 @@ npm run build
 - Node.js 16+
 - npm 8+
 
-## 配置說明
-在 `.env` 文件中配置：
-VITE_API_URL=https://restaurantmap-255668913932.asia-east1.run.app/api
-
 ## 目錄結構
 front-end/
 ├── src/ # 前端源碼
@@ -40,8 +36,10 @@ front-end/
 │ ├── views/ # 頁面元件
 │ ├── store/ # Pinia 狀態管理
 │ ├── router/ # Vue Router 配置
-│ ├── assets/ # 靜態資源（圖片、樣式等）
-│ └── App.vue # 根元件
+│ ├── assets/ # 靜態資源
+│ ├── App.vue # 根元件
+│ └── main.js # 入口文件
 ├── public/ # 公共資源
+├── .env # 環境變數
 ├── package.json # 項目依賴
-└── ...
+└── vite.config.js # Vite 配置
