@@ -1,50 +1,47 @@
-# Restaurant Map
+# Restaurant Map Frontend
 
-一個基於 Vue 3 和 Spring Boot 的餐廳地圖應用，讓用戶可以探索、分享和評論餐廳。
+餐廳地圖應用的前端部分，使用 Vue 3 開發。
 
 ## 技術棧
-### 前端
-- Vue 3
-- Element Plus
-- Axios
-- Vue Router
-- Pinia
-- Vite
+- Vue 3：使用 Composition API 和 `<script setup>`
+- Element Plus：UI 元件庫
+- Axios：HTTP 請求
+- Vue Router：路由管理
+- Pinia：狀態管理
+- Vite：建構工具
 
-### 後端
-- Spring Boot
-- Spring Security
-- Spring Data JPA
-- MySQL
-- JWT
-
-## 專案結構
-```
-restaurant-map/
-├── front-end/          # Vue 3 前端專案
-└── back-end/           # Spring Boot 後端專案
-```
-
-## 快速開始
-
-### 前端
+## 安裝步驟
 ```bash
+# 進入前端目錄
 cd front-end
+
+# 安裝依賴
 npm install
+
+# 啟動開發服務器
 npm run dev
+
+# 構建生產版本
+npm run build
 ```
 
-### 後端
-```bash
-cd back-end
-mvn install
-mvn spring-boot:run
-```
+## 環境要求
+- Node.js 16+
+- npm 8+
 
-## 詳細文檔
-- [前端文檔](./front-end/README.md)
-- [後端文檔](./back-end/README.md)
+## 配置說明
+在 `.env` 文件中配置：
+VITE_API_URL=https://restaurantmap-255668913932.asia-east1.run.app/api
 
-## 開發團隊
-- Sammy Hu
-
+## 目錄結構
+front-end/
+├── src/ # 前端源碼
+│ ├── components/ # 可重用元件
+│ ├── views/ # 頁面元件
+│ ├── store/ # Pinia 狀態管理
+│ ├── router/ # Vue Router 配置
+│ ├── assets/ # 靜態資源（圖片、樣式等）
+│ └── App.vue # 根元件
+├── public/ # 公共資源
+├── package.json # 項目依賴
+└── ...
