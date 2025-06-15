@@ -27,20 +27,24 @@
 - JWT：用戶認證
 - Google Cloud Storage：圖片存儲
 
+## 專案結構
+
+```plaintext
 restaurant-map/
 ├── front-end/ # Vue 3 前端專案
 │ ├── src/ # 源碼
-│ │ ├── components/# 可重用元件
+│ │ ├── components/ # 可重用元件
 │ │ ├── views/ # 頁面元件
 │ │ ├── store/ # Pinia 狀態管理
 │ │ ├── router/ # 路由配置
 │ │ └── assets/ # 靜態資源
 │ └── public/ # 公共資源
-└── back-end/ # Spring Boot 後端專案
-├── src/ # 源碼
-│ ├── main/ # 主要程式碼
-│ └── test/ # 測試程式碼
-└── pom.xml # Maven 配置
+├── back-end/ # Spring Boot 後端專案
+│ ├── src/ # 源碼
+│ │ ├── main/ # 主要程式碼
+│ │ └── test/ # 測試程式碼
+│ └── pom.xml # Maven 配置
+```
 
 
 ## 快速開始
