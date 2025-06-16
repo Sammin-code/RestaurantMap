@@ -30,6 +30,7 @@ npm run build
 - npm 8+
 
 ## 目錄結構
+```plaintext
 front-end/
 ├── src/                 # 前端原始碼
 │   ├── components/      # 可重複使用的components
@@ -43,3 +44,4 @@ front-end/
 ├── .env                 # 環境變數設定檔
 ├── package.json         # 專案相依套件設定
 └── vite.config.js       # Vite 設定檔
+
