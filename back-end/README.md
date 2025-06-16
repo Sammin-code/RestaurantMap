@@ -4,7 +4,7 @@
 
 ## 技術架構
 
-- **核心框架**
+- **核心架構**
   - Java 17
   - Spring Boot 3.2.0
   - Spring Security 6.0
@@ -65,7 +65,7 @@
    - 實現 RESTful API
 
 2. **Service 層**
-   - 實現業務邏輯
+   - 實現系統邏輯
    - 事務管理
    - 數據處理和轉換
    - 調用 Repository 層
@@ -78,7 +78,7 @@
 
 4. **Database 層**
    - MySQL 數據庫
-   - 存儲業務數據
+   - 儲存功能資料
    - 通過 Cloud SQL 代理連接
 
 ## 快速開始
@@ -89,18 +89,18 @@
 - Maven 3.6 或以上
 
 ### 本地開發
-1. Clone專案：
+1. Clone the project：
 ```bash
 git clone https://github.com/Sammin-code/RestaurantMap.git
 cd restaurant-map-backend
 ```
 
-2. 安裝依賴：
+2.  Install dependencies：
 ```bash
 mvn clean install
 ```
 
-3. 運行應用：
+3.  Run the application：
 ```bash
 mvn spring-boot:run
 ```

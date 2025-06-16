@@ -2,7 +2,7 @@
 
 餐廳地圖應用的前端部分，使用 Vue 3 開發。
 
-## 技術棧
+## 使用技術
 - Vue 3：使用 Composition API 和 `<script setup>`
 - Element Plus：UI 元件庫
 - Axios：HTTP 請求
@@ -12,16 +12,16 @@
 
 ## 安裝步驟
 ```bash
-# 進入前端目錄
+# Navigate to the frontend directory
 cd front-end
 
-# 安裝依賴
+# Install dependencies
 npm install
 
-# 啟動開發服務器
+# Start the development server
 npm run dev
 
-# 構建生產版本
+# Build for production
 npm run build
 ```
 
@@ -31,15 +31,15 @@ npm run build
 
 ## 目錄結構
 front-end/
-├── src/ # 前端源碼
-│ ├── components/ # 可重用元件
-│ ├── views/ # 頁面元件
-│ ├── store/ # Pinia 狀態管理
-│ ├── router/ # Vue Router 配置
-│ ├── assets/ # 靜態資源
-│ ├── App.vue # 根元件
-│ └── main.js # 入口文件
-├── public/ # 公共資源
-├── .env # 環境變數
-├── package.json # 項目依賴
-└── vite.config.js # Vite 配置
+├── src/                 # 前端原始碼
+│   ├── components/      # 可重複使用的components
+│   ├── views/           # 各個頁面元件
+│   ├── store/           # Pinia 狀態管理
+│   ├── router/          # Vue Router 設定
+│   ├── assets/          # 靜態資源
+│   ├── App.vue          # 根components
+│   └── main.js          # 程式進入點
+├── public/              # 公用資源目錄
+├── .env                 # 環境變數設定檔
+├── package.json         # 專案相依套件設定
+└── vite.config.js       # Vite 設定檔

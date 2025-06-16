@@ -390,16 +390,16 @@ public class RestaurantService {
         dto.setUpdated_At(review.getUpdated_At());
         dto.setImageUrl(review.getImageUrl());
 
-        // 設置用戶資訊
+        // 設定用戶資訊
         dto.setUserId(review.getUser().getId());
         dto.setUsername(review.getUser().getUsername());
         dto.setUserRole(review.getUser().getRole());
 
-        // 設置餐廳資訊
+        // 設定餐廳資訊
         dto.setRestaurantId(review.getRestaurant().getId());
         dto.setRestaurantName(review.getRestaurant().getName());
 
-        // 設置點讚資訊
+        // 設定點讚資訊
         dto.setLikeCount(review.getLikes().size());
         dto.setIsLiked(review.getLikes().stream()
                 .anyMatch(like -> like.getUser().getId().equals(currentUserId)));
