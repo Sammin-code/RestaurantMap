@@ -23,7 +23,6 @@
 - Spring Data JPA：資料庫操作
 - MySQL：關聯式資料庫
 - JWT：使用者身份驗證
-- Google Cloud Storage：圖片儲存服務
 
 ## 專案結構
 
@@ -62,11 +61,6 @@ mvn install
 mvn spring-boot:run
 ```
 
-## 部署
-- 前端：部署在 Google Cloud Run
-- 後端：部署在 Google Cloud Run
-- 資料庫：使用 Google Cloud SQL
-- 圖片存儲：使用 Google Cloud Storage
 
 ## 詳細文檔
 - [前端文檔](./front-end/README.md)
