@@ -14,10 +14,7 @@
   - MySQL 8.0 (Google Cloud SQL)
   - Hibernate ORM
 
-- **雲端服務 (Google Cloud Platform)**
-  - Cloud Run (容器化部署)
-  - Cloud SQL (資料庫服務)
-  - Cloud Storage (圖片存儲)
+
 
 ## 後端架構
 
@@ -129,16 +126,8 @@ mvn spring-boot:run
 - POST `/api/restaurants/{id}/favorite` - 添加收藏 (需要認證)
 - DELETE `/api/restaurants/{id}/favorite` - 取消收藏 (需要認證)
 
-## 部署
-
-專案使用 Google Cloud Run 進行部署。
-
-部署網址：
-- 前端：https://restaurant-map-frontend-255668913932.asia-east1.run.app
-- 後端：https://restaurantmap-255668913932.asia-east1.run.app
 
 ## 安全性
 
 - 使用 JWT 進行身份驗證
 - 所有密碼都經過 BCrypt 加密
-- 圖片存儲使用 Google Cloud Storage
